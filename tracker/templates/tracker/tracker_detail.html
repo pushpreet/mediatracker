@@ -1,0 +1,12 @@
+<h1>{{ tracker.name }}</h1>
+
+{% if error_message %}
+<p><strong>{{ error_message }}</strong></p>
+{% endif %}
+
+<div>
+    <ul>Last Modified: {{ tracker.last_modified }}</ul>
+    <ul>Query: {{ tracker.query }}</ul>
+    <ul>Created By: {{ tracker.created_by }}</ul>
+    <ul>Category: {{ tracker.category }}</ul>
+</div>

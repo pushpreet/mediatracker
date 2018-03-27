@@ -1,0 +1,12 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}" />
+
+{% if tracker_list %}
+    <ul>
+    {% for tracker in tracker_list %}
+        <li><a href="{% url 'tracker:tracker_detail' tracker.id %}">{{ tracker.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No trackers are available.</p>
+{% endif %}
