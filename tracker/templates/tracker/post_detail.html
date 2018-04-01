@@ -1,0 +1,15 @@
+<h1>{{ post.title }}</h1>
+
+{% if error_message %}
+<p><strong>{{ error_message }}</strong></p>
+{% endif %}
+
+<div>
+    <ul>URL: {{ post.url }}</ul>
+    <ul>Site: {{ post.site }}</ul>
+    <ul>Published: {{ post.published }}</ul>
+    <ul>Country: {{ post.country }}</ul>
+    <ul>Author: {{ post.author }}</ul>
+    <ul>Entities: {{ post.entities }}</ul>
+    <ul>Text: {{ post.text }}</ul>
+</div>

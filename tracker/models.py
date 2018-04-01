@@ -28,43 +28,46 @@ class Tracker(models.Model):
 
     def update(self):
         webhoseio.config(token='e187b1d6-59c5-4b3b-9614-1c42b3e3658e')
-        output = webhoseio.query("filterWebContent", {"q", this.query})
+        output = webhoseio.query("filterWebContent", {"q": self.query})
 
-        previous_posts = [post['uuid'] for post in Post.objects.all()]
+        previous_posts = [post.uuid for post in Post.objects.all()]
+        print(previous_posts)
         for post in output['posts']:
-            if post['uuid'] not in previous_posts:
+            if post['thread']['uuid'] not in previous_posts:
                 Post.objects.create(
-                    uuid = post['uuid'],
-                    url = post['url'],
-                    site = post['site_full'],
-                    site_categories = post['site_category'],
-                    title = post['title_full'],
-                    published = post['published'],
-                    site_type = post['site_type'],
-                    country = post['country'],
-                    main_image = post['main_image'],
-                    performance_score = post['performance_score'],
-                    domain_rank = post['domain_rank'],
+                    uuid = post['thread']['uuid'],
+                    url = post['thread']['url'],
+                    site = post['thread']['site_full'],
+                    site_categories = post['thread']['site_categories'],
+                    title = post['thread']['title_full'],
+                    published = post['thread']['published'],
+                    site_type = post['thread']['site_type'],
+                    country = post['thread']['country'],
+                    main_image = post['thread']['main_image'],
+                    performance_score = post['thread']['performance_score'],
+                    domain_rank = post['thread']['domain_rank'],
                     author = post['author'],
                     text = post['text'],
-                    language = post['langauge'],
+                    language = post['language'],
                     entities = post['entities'],
-                    social = post['social'],
-                    tracker = this.primary_key
+                    social = post['thread']['social'],
+                    tracker = self
                 )
+        
+        return True
 
 class Post(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    url = models.URLField()
-    site = models.URLField()
+    uuid = models.CharField(primary_key=True, max_length=40)
+    url = models.URLField(max_length=500)
+    site = models.URLField(max_length=500)
     site_categories = models.TextField()
     title = models.CharField(max_length=255)
     published = models.DateTimeField()
     site_type = models.CharField(max_length=30)
     country = models.CharField(max_length=30)
-    main_image = models.URLField()
+    main_image = models.URLField(max_length=500)
     performance_score = models.PositiveSmallIntegerField()
-    domain_rank = models.PositiveSmallIntegerField()
+    domain_rank = models.PositiveIntegerField(null=True)
     author = models.CharField(max_length=200)
     text = models.TextField()
     language = models.CharField(max_length=30)

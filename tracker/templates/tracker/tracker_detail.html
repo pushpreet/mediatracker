@@ -10,3 +10,8 @@
     <ul>Created By: {{ tracker.created_by }}</ul>
     <ul>Category: {{ tracker.category }}</ul>
 </div>
+
+<form action="{% url 'tracker:refresh' tracker.id %}" method="post">
+{% csrf_token %}
+    <input type="submit" value="Refresh" />
+</form>

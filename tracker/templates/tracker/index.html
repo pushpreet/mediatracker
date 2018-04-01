@@ -4,11 +4,9 @@
 {% if latest_post_list %}
     <ul>
     {% for post in latest_post_list %}
-        <li>{{ post.title }}</li>
+        <li><a href="{% url 'tracker:post_detail' post.uuid %}">{{ post.title }}</a></li>
     {% endfor %}
     </ul>
 {% else %}
     <p>No posts are available.</p>
 {% endif %}
-
-<button 
