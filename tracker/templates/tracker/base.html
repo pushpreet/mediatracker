@@ -1,0 +1,23 @@
+{% load static %}
+<html>
+    <head>
+        <title>Media Tracker</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="{% static 'tracker/style.css' %}" />
+    </head>
+    <body>
+        <nav class="navbar navbar-dark bg-primary">
+            <a class="navbar-brand" href="{% url 'tracker:index' %}">Media Tracker</a>
+        </nav>
+        <br>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-md-8 col-sm-10 col-12">
+                {% block content %}
+                {% endblock %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
