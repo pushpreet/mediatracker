@@ -1,19 +1,28 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-    <nav class="navbar navbar-light bg-light justify-content-between">
-        <h3 class="navbar-brand">Posts</h3>
-        <form class="form-inline">
+    <nav class="navbar navbar-light justify-content-between" style="border-radius: 10px; background-color: #e3f2fd;">
+        <a class="navbar-brand">Posts</a>
+        <form class="form-inline" style="margin-bottom: 0px;">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
         </form>
     </nav>
+    <br>
     {% if latest_post_list %}
-        <ul>
         {% for post in latest_post_list %}
-            <li><a href="{% url 'tracker:post_detail' post.uuid %}">{{ post.title }}</a></li>
+        <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
+            <div class="card bg-light mb-3" style="width: 100%;">
+                <div class="card-header">{{ post.title }}</div>
+                <div class="card-body">
+                    <h5 class="card-title"></h5>
+                    <p class="card-text">{{ post.text|truncatechars:200 }}</p>
+                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ post.author }} | Site Link | Publish Date</p>
+                </div>
+            </div>
+        </a>
+            <!-- <li><a href="{% url 'tracker:post_detail' post.uuid %}">{{ post.title }}</a></li> -->
         {% endfor %}
-        </ul>
     {% else %}
         <p>No posts are available.</p>
     {% endif %}
