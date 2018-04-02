@@ -20,6 +20,7 @@ class Tracker(models.Model):
     name = models.CharField(max_length=200)
     last_modified = models.DateTimeField(auto_now=True)
     query = models.TextField(null=True)
+    color = models.CharField(max_length=6, default='e67e22')
     created_by = models.ForeignKey(User, models.SET_NULL, null=True)
     category = models.ForeignKey(TrackerCategory, on_delete=models.CASCADE)
 
@@ -37,7 +38,7 @@ class Tracker(models.Model):
                 Post.objects.create(
                     uuid = post['thread']['uuid'],
                     url = post['thread']['url'],
-                    site = post['thread']['site_full'],
+                    site_full = post['thread']['site_full'],
                     site_categories = post['thread']['site_categories'],
                     title = post['thread']['title_full'],
                     published = post['thread']['published'],
@@ -59,7 +60,7 @@ class Tracker(models.Model):
 class Post(models.Model):
     uuid = models.CharField(primary_key=True, max_length=40)
     url = models.URLField(max_length=500)
-    site = models.URLField(max_length=500)
+    site_full = models.URLField(max_length=500)
     site_categories = models.TextField()
     title = models.CharField(max_length=255)
     published = models.DateTimeField()

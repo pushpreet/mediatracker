@@ -1,4 +1,5 @@
 {% extends 'tracker/base.html' %}
+{% load humanize %}
 
 {% block content %}
     <nav class="navbar navbar-light justify-content-between" style="border-radius: 10px; background-color: #e3f2fd;">
@@ -12,14 +13,21 @@
     {% if latest_post_list %}
         {% for post in latest_post_list %}
             <div class="card bg-light mb-3" style="width: 100%;">
-                <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
-                    <div class="card-header">{{ post.title }}</div>
-                </a>
                 <div class="card-body">
+                    <div class="d-flex flex-row justify-content-between align-items-start">
+                        <div class="flex-item">
+                            <a class="custom-header" style="font-size: 1.25rem;" href="{{ post.url }}">{{ post.title }}</a><br>
+                            <a class="badge badge-info" style="font-size: 0.75rem;" href="{% url 'tracker:tracker_list' %}">{{ post.tracker.name }}</a>
+                        </div>
+                        <div class="flex-item">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:post_detail' post.uuid %}" role="button">Show Details</a>
+                        </div>
+                    </div>
+                    <hr>
                     <div class="row">
                         {% if post.main_image|length > 0 %}
                         <div class="col-lg-2 col-md-3 d-none d-md-block">
-                            <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
+                            <a href="{{ post.url }}" class="custom-card">
                                 <img src="{{ post.main_image }}">
                             </a>
                         </div>
@@ -29,10 +37,14 @@
                         <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
                         {% endif %}
                             <div>
-                                <p class="card-text">{{ post.text|truncatechars:200 }}</p>
+                                <p class="card-text">{{ post.text|truncatechars:350 }}</p>
                             </div>
-                            <div class="justify-content-end" style="margin-top: auto;">
-                                <p class="text-right" style="font-size: 12px; margin-bottom: 0px; vertical-align:text-bottom;">{{ post.author }} | Site Link | Publish Date</p>
+                            <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
+                                <span style="font-size: 0.75rem;">
+                                    {{ post.author|title }} | 
+                                    <a href="http://{{ post.site_full }}">{{ post.site_full|slice:"4:" }}</a> | 
+                                    {{ post.published|naturaltime }}
+                                </span>
                             </div>
                         </div>
                     </div>
