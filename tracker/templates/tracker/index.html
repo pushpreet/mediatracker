@@ -8,17 +8,36 @@
           <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
         </form>
     </nav>
+
     {% if latest_post_list %}
         {% for post in latest_post_list %}
-        <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
             <div class="card bg-light mb-3" style="width: 100%;">
-                <div class="card-header">{{ post.title }}</div>
+                <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
+                    <div class="card-header">{{ post.title }}</div>
+                </a>
                 <div class="card-body">
-                    <p class="card-text">{{ post.text|truncatechars:200 }}</p>
-                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ post.author }} | Site Link | Publish Date</p>
+                    <div class="row">
+                        {% if post.main_image|length > 0 %}
+                        <div class="col-lg-2 col-md-3 d-none d-md-block">
+                            <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
+                                <img src="{{ post.main_image }}">
+                            </a>
+                        </div>
+                        
+                        <div class="d-flex flex-column col-lg-10 col-md-9 col-sm-12 col-12">
+                        {% else %}
+                        <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
+                        {% endif %}
+                            <div>
+                                <p class="card-text">{{ post.text|truncatechars:200 }}</p>
+                            </div>
+                            <div class="justify-content-end" style="margin-top: auto;">
+                                <p class="text-right" style="font-size: 12px; margin-bottom: 0px; vertical-align:text-bottom;">{{ post.author }} | Site Link | Publish Date</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </a>
         {% endfor %}
     {% else %}
         <p>No posts are available.</p>
