@@ -7,3 +7,12 @@ a.custom-card:hover {
   color: inherit;
   text-decoration: none !important;
 }
+
+.navbar {
+  margin-bottom: 20px;
+}
+
+body {
+  min-height: 75rem;
+  padding-top: 4.5rem;
+}

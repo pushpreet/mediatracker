@@ -8,20 +8,17 @@
           <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
         </form>
     </nav>
-    <br>
     {% if latest_post_list %}
         {% for post in latest_post_list %}
         <a href="{% url 'tracker:post_detail' post.uuid %}" class="custom-card">
             <div class="card bg-light mb-3" style="width: 100%;">
                 <div class="card-header">{{ post.title }}</div>
                 <div class="card-body">
-                    <h5 class="card-title"></h5>
                     <p class="card-text">{{ post.text|truncatechars:200 }}</p>
                     <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ post.author }} | Site Link | Publish Date</p>
                 </div>
             </div>
         </a>
-            <!-- <li><a href="{% url 'tracker:post_detail' post.uuid %}">{{ post.title }}</a></li> -->
         {% endfor %}
     {% else %}
         <p>No posts are available.</p>

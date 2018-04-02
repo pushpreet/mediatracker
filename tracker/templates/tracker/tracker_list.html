@@ -1,12 +1,27 @@
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}" />
+{% extends 'tracker/base.html' %}
 
-{% if tracker_list %}
-    <ul>
-    {% for tracker in tracker_list %}
-        <li><a href="{% url 'tracker:tracker_detail' tracker.id %}">{{ tracker.name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No trackers are available.</p>
-{% endif %}
+{% block content %}
+    <nav class="navbar navbar-light justify-content-between" style="border-radius: 10px; background-color: #e3f2fd;">
+        <a class="navbar-brand">Trackers</a>
+        <form class="form-inline" style="margin-bottom: 0px;">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </nav>
+
+    {% if tracker_list %}
+        {% for tracker in tracker_list %}
+        <a href="{% url 'tracker:tracker_detail' tracker.id %}" class="custom-card">
+            <div class="card bg-light mb-3" style="width: 100%;">
+                <div class="card-header">{{ tracker.name }}</div>
+                <div class="card-body">
+                    <p class="card-text">{{ tracker.query }}</p>
+                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ tracker.created_by }} | Site Link | Publish Date</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <p>No trackers are available.</p>
+    {% endif %}
+{% endblock %}

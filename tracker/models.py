@@ -65,7 +65,7 @@ class Post(models.Model):
     published = models.DateTimeField()
     site_type = models.CharField(max_length=30)
     country = models.CharField(max_length=30)
-    main_image = models.URLField(max_length=500)
+    main_image = models.URLField(max_length=500, null=True)
     performance_score = models.PositiveSmallIntegerField()
     domain_rank = models.PositiveIntegerField(null=True)
     author = models.CharField(max_length=200)
