@@ -25,7 +25,9 @@ SECRET_KEY = '@+6jkmmjpk62=@^4f7bj7@8b18v#yr49ispefj&f&*obd=v=g&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'demo-mediatracker.herokuapp.com',
+]
 
 
 # Application definition
