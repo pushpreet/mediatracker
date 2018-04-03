@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'demo-mediatracker.herokuapp.com',
+    '127.0.0.1',
 ]
 
 
