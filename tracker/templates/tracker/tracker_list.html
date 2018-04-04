@@ -2,12 +2,8 @@
 {% load humanize %}
 
 {% block content %}
-    <nav class="navbar navbar-light justify-content-between" style="border-radius: 10px; background-color: #e3f2fd;">
-        <a class="navbar-brand">Trackers</a>
-        <form class="form-inline" style="margin-bottom: 0px;">
-          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
-        </form>
+    <nav class="navbar navbar-light justify-content-between" style="border-radius: 6px;">
+        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
     </nav>
 
     {% if tracker_list %}
@@ -35,7 +31,7 @@
                     <span class="card-text">
                         {{ tracker.query }}
                     </span>
-                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ tracker.created_by }} | {{ tracker.last_modified|naturaltime }}</p>
+                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ tracker.created_by }} | modified {{ tracker.last_modified|naturaltime }} | updated {{ tracker.last_updated|naturaltime }}</p>
                 </div>
             </div>
         {% endfor %}

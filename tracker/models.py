@@ -1,6 +1,7 @@
 import uuid
 import webhoseio
 from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 class User(models.Model):
@@ -18,9 +19,10 @@ class TrackerCategory(models.Model):
 
 class Tracker(models.Model):
     name = models.CharField(max_length=200)
-    last_modified = models.DateTimeField(auto_now=True)
     query = models.TextField(null=True)
-    color = models.CharField(max_length=6, default='e67e22')
+    color = models.CharField(max_length=7, default='#e67e22')
+    last_modified = models.DateTimeField()
+    last_updated = models.DateTimeField(null=True)
     created_by = models.ForeignKey(User, models.SET_NULL, null=True)
     category = models.ForeignKey(TrackerCategory, on_delete=models.CASCADE)
 
@@ -54,6 +56,9 @@ class Tracker(models.Model):
                     social = post['thread']['social'],
                     tracker = self
                 )
+        
+        self.last_updated = timezone.now()
+        self.save()
         
         return True
 
