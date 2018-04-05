@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     'ad12-python.herokuapp.com',
+    'ad-python.herokuapp.com',
 ]
 
 
