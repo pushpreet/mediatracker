@@ -29,8 +29,7 @@ ALLOWED_HOSTS = [
     'demo-mediatracker.herokuapp.com',
     '127.0.0.1',
     'localhost',
-    'ad12-python.herokuapp.com',
-    'ad-python.herokuapp.com',
+	'https://test-uk-py.herokuapp.com',
 ]
 
 
