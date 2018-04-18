@@ -37,7 +37,7 @@ class Tracker(models.Model):
         print(previous_posts)
         for post in output['posts']:
             if post['thread']['uuid'] not in previous_posts:
-                Post.objects.create(
+                new_post = Post(
                     uuid = post['thread']['uuid'],
                     url = post['thread']['url'],
                     site_full = post['thread']['site_full'],
@@ -54,9 +54,16 @@ class Tracker(models.Model):
                     language = post['language'],
                     entities = post['entities'],
                     social = post['thread']['social'],
-                    tracker = self
                 )
-        
+
+                new_post.save()
+                new_post.trackers.add(self)
+            
+            else:
+                old_post = Post.objects.get(uuid = post['thread']['uuid'])
+                if self not in old_post.trackers.all():
+                    old_post.trackers.add(self)    
+
         self.last_updated = timezone.now()
         self.save()
         
@@ -79,7 +86,7 @@ class Post(models.Model):
     language = models.CharField(max_length=30)
     entities = models.TextField()
     social = models.TextField()
-    tracker = models.ForeignKey(Tracker, on_delete=models.CASCADE)
+    trackers = models.ManyToManyField(Tracker)
 
     def __str__(self):
         return self.title

@@ -12,7 +12,9 @@
                     <div class="d-flex flex-row justify-content-between align-items-start">
                         <div class="flex-item">
                             <a class="custom-header" style="font-size: 1.25rem;" href="{{ post.url }}">{{ post.title }}</a><br>
-                            <a class="badge badge-info" style="font-size: 0.75rem; margin-top:5px; background-color:{{ post.tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ post.tracker.name }}</a>
+                            {% for tracker in post.trackers.all %}
+                                <a class="badge badge-info" style="font-size: 0.75rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
+                            {% endfor %}
                         </div>
                         <div class="flex-item">
                             <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:post_detail' post.uuid %}" role="button">Show Details</a>
