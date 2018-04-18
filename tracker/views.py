@@ -2,8 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils import timezone
 
-from .models import Post, Tracker
+from .models import Post, Tracker, User, TrackerCategory
 
 # Create your views here.
 class IndexView(generic.ListView):
@@ -32,7 +33,28 @@ class TrackerDetailView(generic.DetailView):
 
 def refresh_tracker(request, tracker_id):
     tracker = get_object_or_404(Tracker, pk=tracker_id)
-    print(tracker)
     
     if tracker.update():
         return HttpResponseRedirect(reverse('tracker:index'))
+
+def delete_tracker(request, tracker_id):
+    tracker = get_object_or_404(Tracker, pk=tracker_id)
+    tracker.delete()
+    
+    return HttpResponseRedirect(reverse('tracker:tracker_list'))
+
+def add_tracker(request):
+    tracker_name = request.POST.get('tracker-name', False)
+    tracker_query = request.POST.get('query', False)
+    
+    Tracker.objects.create(
+        name = tracker_name,
+        query = tracker_query,
+        color = '#e67e22',
+        last_modified = timezone.now(),
+        last_updated = timezone.now(),
+        created_by = User.objects.get(name = 'Pushpreet'),
+        category = TrackerCategory.objects.get(name = 'Test')
+    )
+
+    return HttpResponseRedirect(reverse('tracker:tracker_list'))

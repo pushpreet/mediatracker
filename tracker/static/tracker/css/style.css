@@ -6,10 +6,10 @@ a.custom-header,
 a.custom-header:hover {
   color: inherit;
   text-decoration: none !important;
+  font-size: 1.25rem;
 }
 
 body {
-  min-height: 75rem;
   padding-top: 4rem;
 }
 
