@@ -3,6 +3,7 @@ from django.views import generic
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Post, Tracker, User, TrackerCategory
 
@@ -11,9 +12,12 @@ class IndexView(generic.ListView):
     template_name = 'tracker/index.html'
     context_object_name = 'latest_post_list'
 
-    def get_queryset(self):
-        """ Return the last 10 posts. """
-        return Post.objects.all().order_by('-published')
+    paginate_by = 15
+    model = Post
+
+    # def get_queryset(self):
+    #     """ Return the last 10 posts. """
+    #     return Post.objects.all().order_by('-published')
 
 class PostDetailView(generic.DetailView):
     model = Post
