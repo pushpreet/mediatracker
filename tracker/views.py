@@ -7,17 +7,19 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Post, Tracker, User, TrackerCategory
 
-# Create your views here.
-class IndexView(generic.ListView):
-    template_name = 'tracker/index.html'
-    context_object_name = 'latest_post_list'
+def index(request):
+    latest_post_list = Post.objects.all().order_by('-published')
+    page = request.GET.get('page', 1)
+    paginator = Paginator(latest_post_list, 20)
+    
+    try:
+        latest_posts = paginator.page(page)
+    except PageNotAnInteger:
+        latest_posts = paginator.page(1)
+    except EmptyPage:
+        latest_posts = paginator.page(paginator.num_pages)
 
-    paginate_by = 15
-    model = Post
-
-    # def get_queryset(self):
-    #     """ Return the last 10 posts. """
-    #     return Post.objects.all().order_by('-published')
+    return render(request, 'tracker/index.html', {'latest_post_list': latest_posts})
 
 class PostDetailView(generic.DetailView):
     model = Post
