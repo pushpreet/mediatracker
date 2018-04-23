@@ -2,7 +2,11 @@
 {% load humanize %}
 
 {% block content %}
-    <nav class="navbar navbar-light justify-content-between">
+    <nav id="postNav" class="d-flex flex-row justify-content-end">
+        <form id="post_search_form" class="form-inline" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
+            <input class="form-control form-control-sm mr-sm-2" id="post_searchbox" name ="q" type="text" placeholder="Search">
+            <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
+        </form>
     </nav>
 
     {% if latest_post_list %}

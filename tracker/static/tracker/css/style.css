@@ -36,3 +36,13 @@ img {
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
+
+#postNav {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-inline {
+  padding: 0 0.5rem;
+  margin-bottom: 0;
+}

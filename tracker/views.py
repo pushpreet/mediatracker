@@ -4,11 +4,22 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 
 from .models import Post, Tracker, User, TrackerCategory
 
-def index(request):
+def post_list(request):
     latest_post_list = Post.objects.all().order_by('-published')
+    
+    keywords = request.GET.get('q')
+    if keywords:
+        query = SearchQuery(keywords)
+        title_vector = SearchVector('title', weight='A')
+        text_vector = SearchVector('text', weight='B')
+        vectors = title_vector + text_vector
+        latest_post_list = latest_post_list.annotate(search=vectors).filter(search=query)
+        latest_post_list = latest_post_list.annotate(rank=SearchRank(vectors, query)).order_by('-rank')
+
     page = request.GET.get('page', 1)
     paginator = Paginator(latest_post_list, 20)
     
@@ -19,7 +30,7 @@ def index(request):
     except EmptyPage:
         latest_posts = paginator.page(paginator.num_pages)
 
-    return render(request, 'tracker/index.html', {'latest_post_list': latest_posts})
+    return render(request, 'tracker/post_list.html', {'latest_post_list': latest_posts})
 
 class PostDetailView(generic.DetailView):
     model = Post
@@ -41,7 +52,7 @@ def refresh_tracker(request, tracker_id):
     tracker = get_object_or_404(Tracker, pk=tracker_id)
     
     if tracker.update():
-        return HttpResponseRedirect(reverse('tracker:index'))
+        return HttpResponseRedirect(reverse('tracker:post_list'))
 
 def delete_tracker(request, tracker_id):
     tracker = get_object_or_404(Tracker, pk=tracker_id)
