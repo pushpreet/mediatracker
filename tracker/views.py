@@ -9,6 +9,7 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from .models import Post, Tracker, User, TrackerCategory
 
 def post_list(request):
+    context = {}
     latest_post_list = Post.objects.all().order_by('-published')
     
     keywords = request.GET.get('q')
@@ -20,17 +21,27 @@ def post_list(request):
         latest_post_list = latest_post_list.annotate(search=vectors).filter(search=query)
         latest_post_list = latest_post_list.annotate(rank=SearchRank(vectors, query)).order_by('-rank')
 
+    tracker_list = set()
+    tracker_category_list = set()
+    for post in latest_post_list:
+        for tracker in post.trackers.all():
+            tracker_list.add(tracker)
+            tracker_category_list.add(tracker.category)
+
+    context['tracker_list'] = tracker_list
+    context['tracker_category_list'] = tracker_category_list
+
     page = request.GET.get('page', 1)
     paginator = Paginator(latest_post_list, 20)
     
     try:
-        latest_posts = paginator.page(page)
+        context['latest_post_list'] = paginator.page(page)
     except PageNotAnInteger:
-        latest_posts = paginator.page(1)
+        context['latest_post_list'] = paginator.page(1)
     except EmptyPage:
-        latest_posts = paginator.page(paginator.num_pages)
+        context['latest_post_list'] = paginator.page(paginator.num_pages)
 
-    return render(request, 'tracker/post_list.html', {'latest_post_list': latest_posts})
+    return render(request, 'tracker/post_list.html', {'context': context})
 
 class PostDetailView(generic.DetailView):
     model = Post

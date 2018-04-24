@@ -2,16 +2,48 @@
 {% load humanize %}
 
 {% block content %}
-    <nav id="postNav" class="d-flex flex-row justify-content-end">
-        <form id="post_search_form" class="form-inline" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
-            <input class="form-control form-control-sm mr-sm-2" id="post_searchbox" name ="q" type="text" placeholder="Search">
-            <button class="btn btn-sm btn-outline-primary" type="submit">Search</button>
-        </form>
-    </nav>
+    <hr>
+    <form id="postNav" class="d-flex flex-row" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
+        <div class="col-lg-8 row">
+            <div class="dropdown nav-el col-lg-4 col-md-4">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-toggle="dropdown" style="width:100%;">
+                    All Categories
+                </button>
+                <div class="dropdown-menu">
+                    {% for category in context.tracker_category_list %}
+                        <a class="dropdown-item" href="#">{{ category.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="dropdown nav-el col-lg-4 col-md-4">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-toggle="dropdown" style="width:100%;">
+                    All Trackers
+                </button>
+                <div class="dropdown-menu">
+                    {% for tracker in context.tracker_list %}
+                        <a class="dropdown-item" href="#">{{ tracker.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-4">
+                
+            </div>
+        </div>
 
-    {% if latest_post_list %}
+        <div class="col-lg-4 row ml-auto">
+            <div class="nav-el col-lg-8">
+                <input class="form-control form-control-sm" id="post_searchbox" name ="q" type="text" placeholder="Search">
+            </div>
+            <div class="nav-el col-lg-4">
+                <button class="btn btn-sm btn-outline-primary" type="submit" style="width:100%">Search</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    
+    {% if context.latest_post_list %}
         <div class = "infinite-container">
-            {% for post in latest_post_list %}
+            {% for post in context.latest_post_list %}
                 <div class="infinite-item">
                     <div class="card mb-3" style="width: 100%;">
                         <div class="card-body">
@@ -64,17 +96,19 @@
         Loading...
     </div>
 
-    {% if latest_post_list.has_next %}
-        <a class="infinite-more-link" href="?page={{ latest_post_list.next_page_number }}">More</a>
+    {% if context.latest_post_list.has_next %}
+        <a class="infinite-more-link" href="?page={{ context.latest_post_list.next_page_number }}">More</a>
     {% endif %}
 
     <script>
         var infinite = new Waypoint.Infinite({
             element: $('.infinite-container')[0],
             onBeforePageLoad: function () {
+                console.log($('.infinite-container')[0],"onBefore");
                 $('.loading').show();
             },
             onAfterPageLoad: function ($items) {
+                console.log($('.infinite-container')[0],"onAfter");
                 $('.loading').hide();
             }
         });

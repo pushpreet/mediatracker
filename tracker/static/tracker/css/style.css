@@ -42,7 +42,9 @@ img {
   margin-bottom: 1rem;
 }
 
-.form-inline {
+.nav-el {
   padding: 0 0.5rem;
   margin-bottom: 0;
+  /* margin-left: 0.25rem;
+  margin-right: 0.25rem; */
 }

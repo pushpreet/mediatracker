@@ -23,12 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '@+6jkmmjpk62=@^4f7bj7@8b18v#yr49ispefj&f&*obd=v=g&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'demo-mediatracker.herokuapp.com',
-    '127.0.0.1',
-    'localhost',
 ]
 
 
@@ -145,3 +143,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 import dj_database_url
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
+
+if os.environ.get('DJANGO_DEVELOPMENT') is not None:
+    from .settings_dev import *
