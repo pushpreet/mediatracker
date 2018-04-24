@@ -6,10 +6,12 @@ from . import views
 
 app_name = 'tracker'
 urlpatterns = [
-    path('', lambda r: HttpResponseRedirect(reverse('tracker:index'))),
-    path('posts/', views.IndexView.as_view(), name='index'),
+    path('', lambda r: HttpResponseRedirect(reverse('tracker:post_list'))),
+    path('posts/', views.post_list, name='post_list'),
     path('posts/<str:pk>/', views.PostDetailView.as_view(), name='post_detail'),
     path('tracker/', views.TrackerListView.as_view(), name='tracker_list'),
     path('tracker/<int:pk>/', views.TrackerDetailView.as_view(), name='tracker_detail'),
     path('tracker/<int:tracker_id>/refresh/', views.refresh_tracker, name='refresh'),
+    path('tracker/<int:tracker_id>/delete/', views.delete_tracker, name='delete'),
+    path('tracker/add/', views.add_tracker, name='add'),
 ]
