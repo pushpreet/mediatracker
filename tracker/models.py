@@ -1,7 +1,10 @@
 import uuid
 import webhoseio
+import ast
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
 
 # Create your models here.
 class User(models.Model):
@@ -87,6 +90,23 @@ class Post(models.Model):
     entities = models.TextField()
     social = models.TextField()
     trackers = models.ManyToManyField(Tracker)
+    search_document = SearchVectorField(null=True)
+
+    class Meta:
+        indexes = [
+            GinIndex(fields=['search_document'])
+        ]
+
+    def index_components(self):
+        return {
+            'A': self.title,
+            'B': ' '.join(self.get_entities()),
+            'C': self.text,
+        }
+
+    def get_entities(self):
+        entities = ast.literal_eval(str(self.entities))
+        return [item['name'] for item in (entities['persons'] + entities['organizations'] + entities['locations'])]
 
     def __str__(self):
         return self.title

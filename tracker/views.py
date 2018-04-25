@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db.models import F
 
 from .models import Post, Tracker, User, TrackerCategory
 
@@ -15,11 +16,12 @@ def post_list(request):
     keywords = request.GET.get('q')
     if keywords:
         query = SearchQuery(keywords)
-        title_vector = SearchVector('title', weight='A')
-        text_vector = SearchVector('text', weight='B')
-        vectors = title_vector + text_vector
-        latest_post_list = latest_post_list.annotate(search=vectors).filter(search=query)
-        latest_post_list = latest_post_list.annotate(rank=SearchRank(vectors, query)).order_by('-rank')
+        latest_post_list = Post.objects.filter(search_document=query).annotate(rank=SearchRank(F('search_document'), query)).order_by('-rank')
+        # title_vector = SearchVector('title', weight='A')
+        # text_vector = SearchVector('text', weight='B')
+        # vectors = title_vector + text_vector
+        # latest_post_list = latest_post_list.annotate(search=vectors).filter(search=query)
+        # latest_post_list = latest_post_list.annotate(rank=SearchRank(vectors, query)).order_by('-rank')
 
     tracker_list = set()
     tracker_category_list = set()
