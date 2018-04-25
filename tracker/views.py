@@ -10,38 +10,38 @@ from django.db.models import F
 from .models import Post, Tracker, User, TrackerCategory
 
 def post_list(request):
-    context = {}
-    latest_post_list = Post.objects.all().order_by('-published')
+    filtered_posts = Post.objects.all().order_by('-published')
     
-    keywords = request.GET.get('q')
-    if keywords:
-        query = SearchQuery(keywords)
-        latest_post_list = Post.objects.filter(search_document=query).annotate(rank=SearchRank(F('search_document'), query)).order_by('-rank')
-        # title_vector = SearchVector('title', weight='A')
-        # text_vector = SearchVector('text', weight='B')
-        # vectors = title_vector + text_vector
-        # latest_post_list = latest_post_list.annotate(search=vectors).filter(search=query)
-        # latest_post_list = latest_post_list.annotate(rank=SearchRank(vectors, query)).order_by('-rank')
+    q = request.GET.get('q')
+    if q:
+        query = SearchQuery(q)
+        filtered_posts = Post.objects.filter(search_document=query).annotate(rank=SearchRank(F('search_document'), query)).order_by('-rank')
 
     tracker_list = set()
     tracker_category_list = set()
-    for post in latest_post_list:
+    for post in filtered_posts:
         for tracker in post.trackers.all():
             tracker_list.add(tracker)
             tracker_category_list.add(tracker.category)
 
-    context['tracker_list'] = tracker_list
-    context['tracker_category_list'] = tracker_category_list
-
     page = request.GET.get('page', 1)
-    paginator = Paginator(latest_post_list, 20)
+    paginator = Paginator(filtered_posts, 20)
     
     try:
-        context['latest_post_list'] = paginator.page(page)
+        filtered_posts_page = paginator.page(page)
     except PageNotAnInteger:
-        context['latest_post_list'] = paginator.page(1)
+        filtered_posts_page = paginator.page(1)
     except EmptyPage:
-        context['latest_post_list'] = paginator.page(paginator.num_pages)
+        filtered_posts_page = paginator.page(paginator.num_pages)
+    
+    context = {
+        'latest_post_list': filtered_posts_page,
+        'tracker_list': tracker_list,
+        'tracker_category_list': tracker_category_list,
+        'q': q,
+        'total': paginator.count,
+        'page': paginator.page,
+    }
 
     return render(request, 'tracker/post_list.html', {'context': context})
 

@@ -4,7 +4,7 @@
 {% block content %}
     <hr>
     <form id="postNav" class="d-flex flex-row" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
-        <div class="col-lg-8 row">
+        {% comment %} <div class="col-lg-8 row">
             <div class="dropdown nav-el col-lg-4 col-md-4">
                 <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-toggle="dropdown" style="width:100%;">
                     All Categories
@@ -28,17 +28,22 @@
             <div class="col-lg-4">
                 
             </div>
-        </div>
+        </div> {% endcomment %}
 
-        <div class="col-lg-4 row ml-auto">
-            <div class="nav-el col-lg-8">
-                <input class="form-control form-control-sm" id="post_searchbox" name ="q" type="text" placeholder="Search">
-            </div>
-            <div class="nav-el col-lg-4">
-                <button class="btn btn-sm btn-outline-primary" type="submit" style="width:100%">Search</button>
-            </div>
+        <div class="nav-el col-lg-11">
+            <input class="form-control" id="post_searchbox" name ="q" type="text" placeholder="Search" {% if context.q %}value="{{ context.q }}" {% endif %}>
+        </div>
+        <div class="nav-el col-lg-1">
+            <button class="btn btn-outline-primary" type="submit" style="width:100%">Search</button>
         </div>
     </form>
+    
+    <hr>
+
+    <div class="col-lg-12 text-center">
+        <span style="font-size: 0.8rem; color:gray;"><em>Showing {{ context.total }} posts</em></span>
+    </div>
+
     <hr>
     
     {% if context.latest_post_list %}
