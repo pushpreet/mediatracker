@@ -10,6 +10,7 @@ from django.contrib.postgres.indexes import GinIndex
 class User(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField()
+    posts = models.ManyToManyField('Post', through='UserPost')
 
     def __str__(self):
         return self.name
@@ -37,7 +38,6 @@ class Tracker(models.Model):
         output = webhoseio.query("filterWebContent", {"q": self.query})
 
         previous_posts = [post.uuid for post in Post.objects.all()]
-        print(previous_posts)
         for post in output['posts']:
             if post['thread']['uuid'] not in previous_posts:
                 new_post = Post(
@@ -110,3 +110,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+class UserPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    relevancy = models.PositiveSmallIntegerField(default=0) #DEFAULT=0 STARRED=1 IRRELEVANT=2
+    read = models.BooleanField(default=False)

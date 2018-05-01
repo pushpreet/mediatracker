@@ -1,0 +1,41 @@
+img {
+    object-fit: cover;
+    width: 100%;
+    max-height: 7rem;
+}
+  
+.infinite-item {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.fas {
+    color: #cdd3da;
+}
+
+.action-item {
+    padding: 0.5rem 0;
+}
+
+.fa-star:hover {
+    color: #f1c40f;
+}
+
+.fa-check:hover {
+    color: #27ae60;
+}
+
+.fa-times:hover {
+    color: #e74c3c;
+}
+
+.action-panel {
+    background-color: #f5f6fa;
+    border-radius: 0.25rem;
+    width: 2.5rem;
+    padding: 0.5rem;
+}
+
+.starred {
+    color: #f1c40f;
+}

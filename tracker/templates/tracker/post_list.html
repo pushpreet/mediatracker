@@ -1,47 +1,24 @@
 {% extends 'tracker/base.html' %}
 {% load humanize %}
+{% load static %}
+
+{% block stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'tracker/css/post_list.css' %}" />
+{% endblock %}
 
 {% block content %}
     <hr>
-    <form id="postNav" class="d-flex flex-row" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
-        {% comment %} <div class="col-lg-8 row">
-            <div class="dropdown nav-el col-lg-4 col-md-4">
-                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-toggle="dropdown" style="width:100%;">
-                    All Categories
-                </button>
-                <div class="dropdown-menu">
-                    {% for category in context.tracker_category_list %}
-                        <a class="dropdown-item" href="#">{{ category.name }}</a>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="dropdown nav-el col-lg-4 col-md-4">
-                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-toggle="dropdown" style="width:100%;">
-                    All Trackers
-                </button>
-                <div class="dropdown-menu">
-                    {% for tracker in context.tracker_list %}
-                        <a class="dropdown-item" href="#">{{ tracker.name }}</a>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="col-lg-4">
-                
-            </div>
-        </div> {% endcomment %}
-
-        <div class="nav-el col-lg-11">
+    <form class="d-flex flex-row customNav" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
+        <div class="input-group nav-el">
             <input class="form-control" id="post_searchbox" name ="q" type="text" placeholder="Search" {% if context.q %}value="{{ context.q }}" {% endif %}>
-        </div>
-        <div class="nav-el col-lg-1">
-            <button class="btn btn-outline-primary" type="submit" style="width:100%">Search</button>
+            <div class="input-group-append">
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </div>
         </div>
     </form>
-    
-    <hr>
 
     <div class="col-lg-12 text-center">
-        <span style="font-size: 0.8rem; color:gray;"><em>Showing {{ context.total }} posts</em></span>
+        <a href="#" style="font-size: 0.8rem; color:gray;"><em>Showing {{ context.total }} posts</em></a>
     </div>
 
     <hr>
@@ -49,12 +26,12 @@
     {% if context.latest_post_list %}
         <div class = "infinite-container">
             {% for post in context.latest_post_list %}
-                <div class="infinite-item">
-                    <div class="card mb-3" style="width: 100%;">
+                <div class="d-flex flex-row infinite-item" style="margin-left: 0px; margin-right: 0px;">
+                    <div class="card flex-item">
                         <div class="card-body">
                             <div class="d-flex flex-row justify-content-between align-items-start">
                                 <div class="flex-item">
-                                    <a class="custom-header" style="font-size: 1.25rem;" href="{{ post.url }}">{{ post.title }}</a><br>
+                                    <a class="custom-header" style="font-size: 1.2rem;" href="{{ post.url }}">{{ post.title }}</a><br>
                                     {% for tracker in post.trackers.all %}
                                         <a class="badge badge-info" style="font-size: 0.75rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
                                     {% endfor %}
@@ -66,18 +43,18 @@
                             <hr>
                             <div class="row">
                                 {% if post.main_image|length > 0 %}
-                                <div class="col-lg-2 col-md-3 d-none d-md-block">
+                                <div class="col-lg-3 col-md-3 d-none d-md-block">
                                     <a href="{{ post.url }}" class="custom-card">
                                         <img src="{{ post.main_image }}">
                                     </a>
                                 </div>
                                 
-                                <div class="d-flex flex-column col-lg-10 col-md-9 col-sm-12 col-12">
+                                <div class="d-flex flex-column col-lg-9 col-md-9 col-sm-12 col-12">
                                 {% else %}
                                 <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
                                 {% endif %}
                                     <div>
-                                        <p class="card-text">{{ post.text|truncatechars:350 }}</p>
+                                        <p class="card-text" style="font-size: 0.9rem;">{{ post.text|truncatechars:350 }}</p>
                                     </div>
                                     <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
                                         <span style="font-size: 0.75rem;">
@@ -88,6 +65,13 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="flex-item" style="padding-right: 0;">
+                        <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
+                            <a class="action-item" href="#"><i class="fas fa-star fa-fw" style="font-size: 1rem;"></i></a>
+                            <a class="action-item" href="#"><i class="fas fa-check fa-fw" style="font-size: 1rem;";></i></a>
+                            <a class="action-item" href="#"><i class="fas fa-times fa-fw" style="font-size: 1.1rem;";></i></a>
                         </div>
                     </div>
                 </div>
@@ -104,19 +88,57 @@
     {% if context.latest_post_list.has_next %}
         <a class="infinite-more-link" href="?page={{ context.latest_post_list.next_page_number }}">More</a>
     {% endif %}
+    
+{% endblock %}
 
-    <script>
-        var infinite = new Waypoint.Infinite({
-            element: $('.infinite-container')[0],
-            onBeforePageLoad: function () {
-                console.log($('.infinite-container')[0],"onBefore");
-                $('.loading').show();
+{% block javascript %}
+  <script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+        onBeforePageLoad: function () {
+            console.log($('.infinite-container')[0],"onBefore");
+            $('.loading').show();
+        },
+        onAfterPageLoad: function ($items) {
+            console.log($('.infinite-container')[0],"onAfter");
+            $('.loading').hide();
+        }
+    });
+
+    $('.fas').on('click', function(e) {
+        e.preventDefault();
+        
+        let action;
+        if ($(this).hasClass('fa-star')) action = 'toggle_star';
+        else if ($(this).hasClass('fa-times')) action = 'toggle_irrelevant';
+        else if ($(this).hasClass('fa-check')) action = 'toggle_read';
+
+        $.ajax({
+            type: "POST",
+            url: "{% url 'tracker:set_user_attr' %}",
+            data: {
+                'post_id': $(this).parent().parent().data('postid'),
+                'user_id': 1,
+                'action': action,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
             },
-            onAfterPageLoad: function ($items) {
-                console.log($('.infinite-container')[0],"onAfter");
-                $('.loading').hide();
+            dataType: 'json',
+            success: function (data) {
+                if (data.starred) {
+                    alert("Starred.");
+                }
+                if (data.read) {
+                    alert("Read.");
+                }
+                if (data.irrelevant) {
+                    alert("Irrelevant.");
+                }
+            },
+            error: function (data) {
+                console.log(data);
             }
         });
-    </script>
-    
+    });
+
+  </script>
 {% endblock %}

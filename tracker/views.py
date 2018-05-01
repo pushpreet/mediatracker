@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -88,3 +88,22 @@ def add_tracker(request):
     )
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
+
+def set_user_attr(request):
+    post_id = request.POST.get('post_id', None)
+    user_id = request.POST.get('user_id', None)
+    action = request.POST.get('action', None)
+    
+    if (post_id is None) or (user_id is None) or (action is None):
+        raise Http404("Insufficient data provided.")
+
+    post = User.objects.filter(id = user_id).posts.objects.filter(uuid = post_id)
+    console.log(post)
+
+    data = {
+        'starred': 'true',
+        'read': 'true',
+        'irrelevant': 'false',
+    }
+
+    return HttpResponse(JsonResponse(data), content_type="application/json")
