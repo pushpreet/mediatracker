@@ -14,5 +14,6 @@ urlpatterns = [
     path('tracker/<int:tracker_id>/refresh/', views.refresh_tracker, name='refresh'),
     path('tracker/<int:tracker_id>/delete/', views.delete_tracker, name='delete'),
     path('tracker/add/', views.add_tracker, name='add'),
+    path('tracker/edit/', views.edit_tracker, name='edit'),
     path('posts/api/user-attr/', views.set_user_attr, name='set_user_attr'),
 ]

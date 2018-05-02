@@ -34,7 +34,7 @@ def post_list(request):
     except EmptyPage:
         filtered_posts_page = paginator.page(paginator.num_pages)
     
-    user = User.objects.filter(id=1)[0]
+    user = User.objects.get(id=1)
 
     filtered_posts_page_data = []
 
@@ -123,6 +123,21 @@ def add_tracker(request):
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
 
+def edit_tracker(request):
+    tracker_id = request.POST.get('tracker-id', False)
+    tracker_name = request.POST.get('tracker-name', False)
+    tracker_query = request.POST.get('query', False)
+
+    if tracker_id:
+        tracker = Tracker.objects.get(id=tracker_id)
+
+        tracker.name = tracker_name
+        tracker.query = tracker_query
+
+        tracker.save()
+
+    return HttpResponseRedirect(reverse('tracker:tracker_list'))
+
 def set_user_attr(request):
     if request.method == "POST":
         post_id = request.POST.get('post_id', None)
@@ -134,8 +149,8 @@ def set_user_attr(request):
 
         data = {}
 
-        user = User.objects.filter(id=user_id)[0]
-        post = Post.objects.filter(uuid=post_id)[0]
+        user = User.objects.get(id=user_id)
+        post = Post.objects.get(uuid=post_id)
 
         if action == 'toggle_star':
             post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
@@ -168,10 +183,10 @@ def set_user_attr(request):
                 data['irrelevant'] = 'true'
         
         elif action == 'toggle_read':
-            post_read = user.read_posts.filter(read_posts=post)
+            post_read = user.read_posts.filter(uuid=post.uuid)
             
             if not post_read: # not read
-                User.read_posts.add(post)
+                user.read_posts.add(post)
                 data['read'] = 'true'
             
             else: # read
