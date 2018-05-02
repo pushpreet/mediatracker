@@ -22,10 +22,7 @@
                             <a class="custom-header">{{ tracker.name }}</a>
                         </div>
                         <div class="flex-item">
-                            <form style="margin-bottom: 0px;" action="{% url 'tracker:delete' tracker.id %}" method="post">
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                            </form>
+                            <button class="btn btn-sm btn-outline-danger" type="button" data-toggle="modal" data-target="#deleteTrackerModal" data-id="{{ tracker.id }}">Delete</button>
                         </div>
                         <div class="flex-item">
                             <button class="btn btn-sm btn-outline-primary" type="button" data-toggle="modal" data-target="#editTrackerModal" data-id="{{ tracker.id }}" data-name="{{ tracker.name }}" data-query="{{ tracker.query }}">Edit</button>
@@ -48,6 +45,7 @@
     {% else %}
         <p>No trackers are available.</p>
     {% endif %}
+
     <div class="modal fade" id="addTrackerModal" tabindex="-1" role="dialog" aria-labelledby="addTrackerModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -90,9 +88,7 @@
                 <form action="{% url 'tracker:edit' %}" method="post">
                     {% csrf_token %}
                     <div class="modal-body">
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="tracker-id" name="tracker-id">
-                        </div>
+                        <input type="hidden" class="form-control" id="tracker-id" name="tracker-id">
                         <div class="form-group">
                             <label for="tracker-name" class="col-form-label">Tracker Name:</label>
                             <input type="text" class="form-control" id="tracker-name" name="tracker-name">
@@ -105,6 +101,24 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-outline-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteTrackerModal" tabindex="-1" role="dialog" aria-labelledby="deleteTrackerModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="{% url 'tracker:delete' %}" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="text" class="form-control" id="tracker-id" name="tracker-id" hidden>
+                        <label for="query" class="col-form-label">Are you sure?</label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-outline-primary">Yes</button>
                     </div>
                 </form>
             </div>
@@ -124,6 +138,14 @@
             modal.find('#tracker-id').val(id)
             modal.find('#tracker-name').val(name)
             modal.find('#query').val(query)
+        });
+
+        $('#deleteTrackerModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var id = button.data('id') // Extract info from data-* attributes
+            
+            var modal = $(this)
+            modal.find('#tracker-id').val(id)
         });
     </script>
 {% endblock %}

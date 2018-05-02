@@ -101,7 +101,8 @@ def refresh_tracker(request, tracker_id):
     if tracker.update():
         return HttpResponseRedirect(reverse('tracker:post_list'))
 
-def delete_tracker(request, tracker_id):
+def delete_tracker(request):
+    tracker_id = request.POST.get('tracker-id', False)
     tracker = get_object_or_404(Tracker, pk=tracker_id)
     tracker.delete()
     

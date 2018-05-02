@@ -30,3 +30,7 @@ body {
   padding: 0 0.5rem;
   margin-bottom: 0;
 }
+
+.modal-footer {
+  padding-bottom: 0;
+}
