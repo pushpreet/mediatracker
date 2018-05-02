@@ -69,9 +69,9 @@
                     </div>
                     <div class="flex-item" style="padding-right: 0;">
                         <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
-                            <a class="action-item" href="#"><i class="fas fa-star fa-fw" style="font-size: 1rem;"></i></a>
-                            <a class="action-item" href="#"><i class="fas fa-check fa-fw" style="font-size: 1rem;";></i></a>
-                            <a class="action-item" href="#"><i class="fas fa-times fa-fw" style="font-size: 1.1rem;";></i></a>
+                            <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
+                            <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
+                            <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.irrelevant == 'true' %} irrelevant {% endif %}" style="font-size: 1.1rem;";></i></a>
                         </div>
                     </div>
                 </div>
@@ -117,22 +117,21 @@
             type: "POST",
             url: "{% url 'tracker:set_user_attr' %}",
             data: {
-                'post_id': $(this).parent().parent().data('postid'),
+                'post_id': $(e.target).parent().parent().data('postid'),
                 'user_id': 1,
                 'action': action,
                 csrfmiddlewaretoken: '{{ csrf_token }}'
             },
             dataType: 'json',
             success: function (data) {
-                if (data.starred) {
-                    alert("Starred.");
-                }
-                if (data.read) {
-                    alert("Read.");
-                }
-                if (data.irrelevant) {
-                    alert("Irrelevant.");
-                }
+                if (data.starred === 'true') $(e.target).addClass('starred');
+                else if (data.starred === 'false') $(e.target).removeClass('starred');
+                
+                if (data.read === 'true') $(e.target).addClass('read');
+                else if (data.read === 'false') $(e.target).removeClass('read');
+
+                if (data.irrelevant === 'true') $(e.target).addClass('irrelevant');
+                else if (data.irrelevant === 'false') $(e.target).removeClass('irrelevant');
             },
             error: function (data) {
                 console.log(data);

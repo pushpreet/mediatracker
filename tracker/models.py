@@ -10,7 +10,8 @@ from django.contrib.postgres.indexes import GinIndex
 class User(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField()
-    posts = models.ManyToManyField('Post', through='UserPost')
+    relevent_posts = models.ManyToManyField('Post', through='UserPostRelevant', related_name='relevant_posts')
+    read_posts = models.ManyToManyField('Post', related_name='read_posts')
 
     def __str__(self):
         return self.name
@@ -84,7 +85,7 @@ class Post(models.Model):
     main_image = models.URLField(max_length=500, null=True)
     performance_score = models.PositiveSmallIntegerField()
     domain_rank = models.PositiveIntegerField(null=True)
-    author = models.CharField(max_length=200)
+    author = models.CharField(max_length=500)
     text = models.TextField()
     language = models.CharField(max_length=30)
     entities = models.TextField()
@@ -111,8 +112,12 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-class UserPost(models.Model):
+class UserPostRelevant(models.Model):
+    RELEVANCY_CHOICES = (
+        (0, 'Default'),
+        (1, 'Starred'),
+        (2, 'Irrelevant'),
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    relevancy = models.PositiveSmallIntegerField(default=0) #DEFAULT=0 STARRED=1 IRRELEVANT=2
-    read = models.BooleanField(default=False)
+    relevancy = models.PositiveSmallIntegerField(default=0, choices=RELEVANCY_CHOICES)

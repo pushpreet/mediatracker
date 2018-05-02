@@ -39,3 +39,11 @@ img {
 .starred {
     color: #f1c40f;
 }
+
+.read {
+    color: #27ae60;
+}
+
+.irrelevant {
+    color: #e74c3c;
+}

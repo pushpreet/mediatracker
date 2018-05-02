@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse, HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import F
 
-from .models import Post, Tracker, User, TrackerCategory
+from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
 
 def post_list(request):
     filtered_posts = Post.objects.all().order_by('-published')
@@ -34,8 +34,42 @@ def post_list(request):
     except EmptyPage:
         filtered_posts_page = paginator.page(paginator.num_pages)
     
+    user = User.objects.filter(id=1)[0]
+
+    filtered_posts_page_data = []
+
+    for post in filtered_posts_page:
+        data = {}
+        data['uuid'] = post.uuid
+        data['url'] = post.url
+        data['title'] = post.title
+        data['main_image'] = post.main_image
+        data['author'] = post.author
+        data['site_full'] = post.site_full
+        data['published'] = post.published
+        data['text'] = post.text
+
+        post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
+        post_read = User.objects.filter(id=user.id, read_posts=post)
+
+        if post_relevancy:
+            if post_relevancy[0].relevancy == 1:
+                data['starred'] = 'true'
+                data['irrelevant'] = 'false'
+            
+            if post_relevancy[0].relevancy == 2:
+                data['starred'] = 'false'
+                data['irrelevant'] = 'true'
+        
+        if post_read:
+            data['read'] = 'true'
+        else:
+            data['read'] = 'false'
+        
+        filtered_posts_page_data.append(data)
+
     context = {
-        'latest_post_list': filtered_posts_page,
+        'latest_post_list': filtered_posts_page_data,
         'tracker_list': tracker_list,
         'tracker_category_list': tracker_category_list,
         'q': q,
@@ -90,20 +124,58 @@ def add_tracker(request):
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
 
 def set_user_attr(request):
-    post_id = request.POST.get('post_id', None)
-    user_id = request.POST.get('user_id', None)
-    action = request.POST.get('action', None)
-    
-    if (post_id is None) or (user_id is None) or (action is None):
-        raise Http404("Insufficient data provided.")
+    if request.method == "POST":
+        post_id = request.POST.get('post_id', None)
+        user_id = request.POST.get('user_id', None)
+        action = request.POST.get('action', None)
+        
+        if (post_id is None) or (user_id is None) or (action is None):
+            raise Http404("Insufficient data provided.")
 
-    post = User.objects.filter(id = user_id).posts.objects.filter(uuid = post_id)
-    console.log(post)
+        data = {}
 
-    data = {
-        'starred': 'true',
-        'read': 'true',
-        'irrelevant': 'false',
-    }
+        user = User.objects.filter(id=user_id)[0]
+        post = Post.objects.filter(uuid=post_id)[0]
 
-    return HttpResponse(JsonResponse(data), content_type="application/json")
+        if action == 'toggle_star':
+            post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
+            
+            if not post_relevancy:  # neither starred not irrelevant
+                UserPostRelevant.objects.create(user=user, post=post, relevancy=1)
+                data['starred'] = 'true'
+            
+            elif post_relevancy[0].relevancy == 1: # already starred
+                post_relevancy[0].delete()
+                data['starred'] = 'false'
+            
+            elif post_relevancy[0].relevancy == 2: # marked irrelevant
+                post_relevancy[0].relevancy = 1
+                data['starred'] = 'true'
+        
+        elif action == 'toggle_irrelevant':
+            post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
+            
+            if not post_relevancy:  # neither starred not irrelevant
+                UserPostRelevant.objects.create(user=user, post=post, relevancy=2)
+                data['irrelevant'] = 'true'
+            
+            elif post_relevancy[0].relevancy == 2: # already irrelevant
+                post_relevancy[0].delete()
+                data['irrelevant'] = 'false'
+            
+            elif post_relevancy[0].relevancy == 1: # marked starred
+                post_relevancy[0].relevancy = 2
+                data['irrelevant'] = 'true'
+        
+        elif action == 'toggle_read':
+            post_read = user.read_posts.filter(read_posts=post)
+            
+            if not post_read: # not read
+                User.read_posts.add(post)
+                data['read'] = 'true'
+            
+            else: # read
+                post_read[0].delete()
+                data['read'] = 'false'
+
+        return HttpResponse(JsonResponse(data), content_type="application/json")
