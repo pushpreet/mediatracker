@@ -14,11 +14,11 @@ body {
 }
 
 .flex-item {
-  padding: 0 0.5rem;
+  padding: 0 0.25rem;
 }
 
 .flex-row {
-  margin: 0 -0.5rem;
+  margin: 0 -0.25rem;
 }
 
 .customNav {
@@ -27,7 +27,7 @@ body {
 }
 
 .nav-el {
-  padding: 0 0.5rem;
+  padding: 0 0.25rem;
   margin-bottom: 0;
 }
 

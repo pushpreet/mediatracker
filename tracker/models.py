@@ -28,6 +28,7 @@ class Tracker(models.Model):
     color = models.CharField(max_length=7, default='#e67e22')
     last_modified = models.DateTimeField()
     last_updated = models.DateTimeField(null=True)
+    auto_refresh = models.BooleanField(default=False)
     created_by = models.ForeignKey(User, models.SET_NULL, null=True)
     category = models.ForeignKey(TrackerCategory, on_delete=models.CASCADE)
 

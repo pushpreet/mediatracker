@@ -24,16 +24,18 @@ def post_list(request):
             tracker_list.add(tracker)
             tracker_category_list.add(tracker.category)
 
-    page = request.GET.get('page', 1)
-    paginator = Paginator(filtered_posts, 20)
+    # page = request.GET.get('page', 1)
+    # paginator = Paginator(filtered_posts, 20)
     
-    try:
-        filtered_posts_page = paginator.page(page)
-    except PageNotAnInteger:
-        filtered_posts_page = paginator.page(1)
-    except EmptyPage:
-        filtered_posts_page = paginator.page(paginator.num_pages)
+    # try:
+    #     filtered_posts_page = paginator.page(page)
+    # except PageNotAnInteger:
+    #     filtered_posts_page = paginator.page(1)
+    # except EmptyPage:
+    #     filtered_posts_page = paginator.page(paginator.num_pages)
     
+    filtered_posts_page = filtered_posts
+
     user = User.objects.get(id=1)
 
     filtered_posts_page_data = []
@@ -48,6 +50,7 @@ def post_list(request):
         data['site_full'] = post.site_full
         data['published'] = post.published
         data['text'] = post.text
+        data['trackers'] = post.trackers
 
         post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
         post_read = User.objects.filter(id=user.id, read_posts=post)
@@ -73,11 +76,11 @@ def post_list(request):
         'tracker_list': tracker_list,
         'tracker_category_list': tracker_category_list,
         'q': q,
-        'total': paginator.count,
-        'page': paginator.page,
+        'total': len(filtered_posts_page_data),
+        # 'page': paginator.page,
     }
 
-    return render(request, 'tracker/post_list.html', {'context': context})
+    return render(request, 'tracker/post_list.html', context)
 
 class PostDetailView(generic.DetailView):
     model = Post

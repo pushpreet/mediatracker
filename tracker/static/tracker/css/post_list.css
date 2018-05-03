@@ -34,6 +34,8 @@ img {
     border-radius: 0.25rem;
     width: 2.5rem;
     padding: 0.5rem;
+    position: absolute;
+    right: -2rem;
 }
 
 .starred {
@@ -46,4 +48,11 @@ img {
 
 .irrelevant {
     color: #e74c3c;
+}
+
+.filter {
+    border: 0;
+    font-size: 0.75rem;
+    background-color: white;
+    color: gray;
 }

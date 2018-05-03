@@ -9,8 +9,8 @@
 {% block content %}
     <hr>
     <form class="d-flex flex-row customNav" action="{% url 'tracker:post_list' %}" method="get" accept-charset="utf-8">
-        <div class="input-group nav-el">
-            <input class="form-control" id="post_searchbox" name ="q" type="text" placeholder="Search" {% if context.q %}value="{{ context.q }}" {% endif %}>
+        <div class="input-group input-group-sm nav-el">
+            <input class="form-control" id="post_searchbox" name ="q" type="text" placeholder="Search" {% if q %}value="{{ q }}" {% endif %}>
             <div class="input-group-append">
                 <button class="btn btn-outline-primary" type="submit">Search</button>
             </div>
@@ -18,26 +18,33 @@
     </form>
 
     <div class="col-lg-12 text-center">
-        <a href="#" style="font-size: 0.8rem; color:gray;"><em>Showing {{ context.total }} posts</em></a>
+        <a id="filters-toggle" href="#" style="font-size: 0.8rem; color:gray;"><em>Showing {{ total }} posts</em></a>
+    </div>
+    
+    <div id="filters" style="display: none;">
+        <div class="d-flex flex-row">
+            <div class="d-flex flex-column">
+                
+                <button class="btn filter" type="submit">Today</button>
+                <button class="btn filter" type="submit">Last Week</button>
+            </div>
+        </div>
     </div>
 
     <hr>
     
-    {% if context.latest_post_list %}
+    {% if latest_post_list %}
         <div class = "infinite-container">
-            {% for post in context.latest_post_list %}
+            {% for post in latest_post_list %}
                 <div class="d-flex flex-row infinite-item" style="margin-left: 0px; margin-right: 0px;">
                     <div class="card flex-item">
                         <div class="card-body">
                             <div class="d-flex flex-row justify-content-between align-items-start">
                                 <div class="flex-item">
-                                    <a class="custom-header" style="font-size: 1.2rem;" href="{{ post.url }}">{{ post.title }}</a><br>
+                                    <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a><br>
                                     {% for tracker in post.trackers.all %}
-                                        <a class="badge badge-info" style="font-size: 0.75rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
+                                        <a class="badge badge-info" style="font-size: 0.6rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
                                     {% endfor %}
-                                </div>
-                                <div class="flex-item">
-                                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'tracker:post_detail' post.uuid %}" role="button">Show Details</a>
                                 </div>
                             </div>
                             <hr>
@@ -54,7 +61,9 @@
                                 <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
                                 {% endif %}
                                     <div>
-                                        <p class="card-text" style="font-size: 0.9rem;">{{ post.text|truncatechars:350 }}</p>
+                                        <a class="custom-header" href="{% url 'tracker:post_detail' post.uuid %}">
+                                            <p class="card-text" style="font-size: 0.9rem;">{{ post.text|truncatechars:450 }}</p>
+                                        </a>
                                     </div>
                                     <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
                                         <span style="font-size: 0.75rem;">
@@ -67,32 +76,34 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex-item" style="padding-right: 0;">
-                        <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
-                            <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
-                            <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
-                            <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.irrelevant == 'true' %} irrelevant {% endif %}" style="font-size: 1.1rem;";></i></a>
-                        </div>
+                    <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
+                        <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
+                        <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
+                        <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.irrelevant == 'true' %} irrelevant {% endif %}" style="font-size: 1.1rem;";></i></a>
                     </div>
                 </div>
+                
+                    
+                
             {% endfor %}
         </div>
     {% else %}
         <p>No posts are available.</p>
     {% endif %}
     
-    <div class="loading" style="display: none;">
+    {% comment %} <div class="loading" style="display: none;">
         Loading...
     </div>
 
-    {% if context.latest_post_list.has_next %}
-        <a class="infinite-more-link" href="?page={{ context.latest_post_list.next_page_number }}">More</a>
-    {% endif %}
+    {% if latest_post_list.has_next %}
+        <a class="infinite-more-link" href="?page={{ latest_post_list.next_page_number }}">More</a>
+    {% endif %} {% endcomment %}
     
 {% endblock %}
 
 {% block javascript %}
   <script>
+    /*
     var infinite = new Waypoint.Infinite({
         element: $('.infinite-container')[0],
         onBeforePageLoad: function () {
@@ -104,6 +115,7 @@
             $('.loading').hide();
         }
     });
+    */
 
     $('.fas').on('click', function(e) {
         e.preventDefault();
@@ -137,6 +149,19 @@
                 console.log(data);
             }
         });
+    });
+
+    $("#post_searchbox").on("focus", function() {
+        $("#filters").slideDown("fast");
+    });
+
+    $(document).on("click", function(e) {
+        if ($(e.target).parent().attr('id') === 'filters-toggle') {
+            $("#filters").slideToggle("fast");
+        }
+        else if (e.target.id !== 'post_searchbox') {
+            $("#filters").slideUp("fast");
+        }
     });
 
   </script>
