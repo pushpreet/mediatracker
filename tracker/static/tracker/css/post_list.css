@@ -54,5 +54,14 @@ img {
     border: 0;
     font-size: 0.75rem;
     background-color: white;
-    color: gray;
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.filter-selected {
+    color: #3498db;
+}
+
+.filter-disabled {
+    color: #bdc3c7;
 }

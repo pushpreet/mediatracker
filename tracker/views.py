@@ -13,17 +13,42 @@ def post_list(request):
     filtered_posts = Post.objects.all().order_by('-published')
     
     q = request.GET.get('q')
+    selected_trackers = request.GET.getlist('trackers')
+    selected_time = request.GET.get('timeFrom', '')
+
     if q:
         query = SearchQuery(q)
         filtered_posts = Post.objects.filter(search_document=query).annotate(rank=SearchRank(F('search_document'), query)).order_by('-rank')
 
-    tracker_list = set()
-    tracker_category_list = set()
+    tracker_counts = {}
+    tracker_category_counts = {}
     for post in filtered_posts:
         for tracker in post.trackers.all():
-            tracker_list.add(tracker)
-            tracker_category_list.add(tracker.category)
+            if tracker.name in tracker_counts:
+                tracker_counts[tracker.name] += 1
+            else:
+                tracker_counts[tracker.name] = 1
 
+            if tracker.category.name in tracker_category_counts:
+                tracker_category_counts[tracker.category.name] += 1
+            else:
+                tracker_category_counts[tracker.category.name] = 1
+
+    tracker_counts = sorted(
+        [
+            {'name': name, 'count': value}
+            for name, value in list(tracker_counts.items())
+        ],
+        key=lambda t: t['count'], reverse=True
+    )
+
+    tracker_category_counts = sorted(
+        [
+            {'name': name, 'count': value}
+            for name, value in list(tracker_category_counts.items())
+        ],
+        key=lambda t: t['count'], reverse=True
+    )
     # page = request.GET.get('page', 1)
     # paginator = Paginator(filtered_posts, 20)
     
@@ -73,10 +98,12 @@ def post_list(request):
 
     context = {
         'latest_post_list': filtered_posts_page_data,
-        'tracker_list': tracker_list,
-        'tracker_category_list': tracker_category_list,
         'q': q,
         'total': len(filtered_posts_page_data),
+        'filters': [
+            {'type': 'tracker_category', 'counts': tracker_category_counts},
+            {'type': 'tracker', 'counts': tracker_counts},
+        ],
         # 'page': paginator.page,
     }
 

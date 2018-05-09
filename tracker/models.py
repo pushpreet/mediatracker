@@ -119,6 +119,7 @@ class UserPostRelevant(models.Model):
         (1, 'Starred'),
         (2, 'Irrelevant'),
     )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     relevancy = models.PositiveSmallIntegerField(default=0, choices=RELEVANCY_CHOICES)

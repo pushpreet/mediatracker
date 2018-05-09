@@ -34,3 +34,17 @@ body {
 .modal-footer {
   padding-bottom: 0;
 }
+
+.alignleft {
+	float: left;
+}
+
+.alignright {
+	float: right;
+}
+
+.separator {
+  background-color: #bdc3c7;
+  width: 1px;
+  margin: 0.5rem;
+}
