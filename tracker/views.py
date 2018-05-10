@@ -10,18 +10,43 @@ from django.db.models import F
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
 
 def post_list(request):
-    filtered_posts = Post.objects.all().order_by('-published')
+    user = User.objects.get(id=1) # user which is logged in
+    user_trackers = Tracker.objects.filter(created_by=user) # trackers which this user has created
+    user_posts = Post.objects.filter(trackers_in=user_trackers).distinct() # all posts which belong to these trackers and without duplication
     
     q = request.GET.get('q')
     selected_trackers = request.GET.getlist('trackers')
+    selected_tracker_categories = request.GET.getlist('tracker_categories')
     selected_time = request.GET.get('timeFrom', '')
+    selected_relevancy = request.GET.get('relevancy', '')
+
+    query = None
+    rank_annotation = None
+    required_values = ['pk']
+
+    filtered_posts = None
 
     if q:
         query = SearchQuery(q)
-        filtered_posts = Post.objects.filter(search_document=query).annotate(rank=SearchRank(F('search_document'), query)).order_by('-rank')
-
+        rank_annotation = SearchRank(F('search_document'), query)
+        values.append('rank')
+    
+    # Start with a .none() queryset just so we can union stuff onto it
+    qs = Post.objects.annotate(
+        type=models.Value('empty', output_field=models.CharField())
+    )
+    # add rank as annotation
+    if q:
+        qs = qs.annotate(rank=rank_annotation)
+    qs = qs.values(*required_values).none()
+        
     tracker_counts = {}
     tracker_category_counts = {}
+    relevancy_counts = {'Starred': 0, 'Removed': 0}
+
+    for tracker in selected_trackers:
+        qs = qs.filter()
+
     for post in filtered_posts:
         for tracker in post.trackers.all():
             if tracker.name in tracker_counts:
@@ -60,8 +85,6 @@ def post_list(request):
     #     filtered_posts_page = paginator.page(paginator.num_pages)
     
     filtered_posts_page = filtered_posts
-
-    user = User.objects.get(id=1)
 
     filtered_posts_page_data = []
 
@@ -203,15 +226,15 @@ def set_user_attr(request):
             
             if not post_relevancy:  # neither starred not irrelevant
                 UserPostRelevant.objects.create(user=user, post=post, relevancy=2)
-                data['irrelevant'] = 'true'
+                data['removed'] = 'true'
             
             elif post_relevancy[0].relevancy == 2: # already irrelevant
                 post_relevancy[0].delete()
-                data['irrelevant'] = 'false'
+                data['removed'] = 'false'
             
             elif post_relevancy[0].relevancy == 1: # marked starred
                 post_relevancy[0].relevancy = 2
-                data['irrelevant'] = 'true'
+                data['removed'] = 'true'
         
         elif action == 'toggle_read':
             post_read = user.read_posts.filter(uuid=post.uuid)

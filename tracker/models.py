@@ -117,7 +117,7 @@ class UserPostRelevant(models.Model):
     RELEVANCY_CHOICES = (
         (0, 'Default'),
         (1, 'Starred'),
-        (2, 'Irrelevant'),
+        (2, 'Removed'),
     )
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)

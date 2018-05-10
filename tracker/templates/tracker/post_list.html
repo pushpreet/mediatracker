@@ -18,8 +18,9 @@
             </div>
         </div>
 
-        <input id="filterTracker" type="hidden" name="trackers" value="">
-        <input id="filterTime" type="hidden" name="timeFrom" value="">
+        <input id="filter_tracker" type="hidden" name="trackers" value="">
+        <input id="filter_tracker_category" type="hidden" name="tracker_categories" value="">
+        <input id="filter_time" type="hidden" name="timeFrom" value="">
 
     </form>
 
@@ -172,6 +173,31 @@
         }
         else if (e.target.id !== 'post_searchbox') {
             $("#filters").slideUp("fast");
+        }
+        //else if (e.)
+    });
+
+    $(".filter").on("click", function(e) {
+        var filterType = $(e.target).parent().attr('id');
+        var options = $(e.target).siblings();
+
+        if (!$(e.target).hasClass('filter-disabled')) {
+            if ($(e.target).hasClass('filter-selected')) {
+                $(e.target).removeClass('filter-selected');
+                $("#filter_" + filterType).value("");
+
+                for (var option in options) {
+                    $(option.target).removeClass('filter-disabled');
+                }
+            }
+            else {
+                $(e.target).addClass('filter-selected');
+                $("#filter_" + filterType).value($(e.target).text().split(':')[0]);
+                
+                for (var option in options) {
+                    $(option.target).addClass('filter-disabled');
+                }
+            }
         }
     });
 
