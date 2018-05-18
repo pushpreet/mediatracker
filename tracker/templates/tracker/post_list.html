@@ -18,9 +18,9 @@
             </div>
         </div>
 
-        <input id="filter_tracker" type="hidden" name="trackers" value="">
-        <input id="filter_tracker_category" type="hidden" name="tracker_categories" value="">
-        <input id="filter_time" type="hidden" name="timeFrom" value="">
+        {% for filter in filters %}
+            <input id="filter_{{ filter.type }}" type="hidden" name="{{ filter.type }}" value="">
+        {% endfor %}
 
     </form>
 
@@ -28,12 +28,21 @@
         <a id="filters-toggle" href="#" style="font-size: 0.8rem; color:gray;"><em>Showing {{ total }} posts</em></a>
     </div>
     
-    <div id="filters" style="display: none; margin-top: 1rem;">
-        <div class="d-flex flex-row justify-content-center">
+    <div class="collapse" id="filters">
+        <div class="d-flex flex-row justify-content-center" style="margin-top: 1rem;">
             {% for filter in filters %}
                 <div id="{{ filter.type }}" class="d-flex flex-column">
                     {% for option in filter.counts %}
-                        <label class="btn filter">{{ option.name }}: {{ option.count }}</label>
+                        {% if filter.selected %}
+                            {% if option.id == filter.selected %}
+                                <button class="btn filter filter-selected" data-id="{{option.id}}">{{ option.name }}: {{ option.count }}</button>
+                            {% else %}
+                                <button class="btn filter filter-disabled" data-id="{{option.id}}" disabled>{{ option.name }}: {{ option.count }}</button>
+                            {% endif %}
+                        
+                        {% else %}
+                            <button class="btn filter" data-id="{{option.id}}">{{ option.name }}: {{ option.count }}</button>
+                        {% endif %}
                     {% endfor %}
                 </div>
             
@@ -91,12 +100,9 @@
                     <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
                         <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
                         <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
-                        <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.irrelevant == 'true' %} irrelevant {% endif %}" style="font-size: 1.1rem;";></i></a>
+                        <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.removed == 'true' %} removed {% endif %}" style="font-size: 1.1rem;";></i></a>
                     </div>
                 </div>
-                
-                    
-                
             {% endfor %}
         </div>
     {% else %}
@@ -129,12 +135,16 @@
     });
     */
 
+    $('#filters').collapse({
+        toggle: false
+    })
+
     $('.fas').on('click', function(e) {
         e.preventDefault();
         
         let action;
         if ($(this).hasClass('fa-star')) action = 'toggle_star';
-        else if ($(this).hasClass('fa-times')) action = 'toggle_irrelevant';
+        else if ($(this).hasClass('fa-times')) action = 'toggle_removed';
         else if ($(this).hasClass('fa-check')) action = 'toggle_read';
 
         $.ajax({
@@ -148,14 +158,18 @@
             },
             dataType: 'json',
             success: function (data) {
-                if (data.starred === 'true') $(e.target).addClass('starred');
-                else if (data.starred === 'false') $(e.target).removeClass('starred');
-                
-                if (data.read === 'true') $(e.target).addClass('read');
-                else if (data.read === 'false') $(e.target).removeClass('read');
+                star_el = $(e.target).parent().parent().find(".fa-star");
+                check_el = $(e.target).parent().parent().find(".fa-check");
+                times_el = $(e.target).parent().parent().find(".fa-times");
 
-                if (data.irrelevant === 'true') $(e.target).addClass('irrelevant');
-                else if (data.irrelevant === 'false') $(e.target).removeClass('irrelevant');
+                if (data.starred === 'true') star_el.addClass('starred');
+                else if (data.starred === 'false') star_el.removeClass('starred');
+                
+                if (data.read === 'true') check_el.addClass('read');
+                else if (data.read === 'false') check_el.removeClass('read');
+
+                if (data.removed === 'true') times_el.addClass('removed');
+                else if (data.removed === 'false') times_el.removeClass('removed');
             },
             error: function (data) {
                 console.log(data);
@@ -164,17 +178,20 @@
     });
 
     $("#post_searchbox").on("focus", function() {
-        $("#filters").slideDown("fast");
+        $("#filters").collapse('show');
     });
 
     $(document).on("click", function(e) {
-        if ($(e.target).parent().attr('id') === 'filters-toggle') {
-            $("#filters").slideToggle("fast");
+        if ($(e.target).hasClass("filter")) {
+            return;
+        }
+        else if ($(e.target).parent().attr('id') === 'filters-toggle') {
+            $("#filters").collapse('toggle');
         }
         else if (e.target.id !== 'post_searchbox') {
-            $("#filters").slideUp("fast");
+            $("#filters").collapse('hide');
         }
-        //else if (e.)
+        
     });
 
     $(".filter").on("click", function(e) {
@@ -184,19 +201,15 @@
         if (!$(e.target).hasClass('filter-disabled')) {
             if ($(e.target).hasClass('filter-selected')) {
                 $(e.target).removeClass('filter-selected');
-                $("#filter_" + filterType).value("");
+                $("#filter_" + filterType).val("");
 
-                for (var option in options) {
-                    $(option.target).removeClass('filter-disabled');
-                }
+                $(options).removeClass('filter-disabled').prop('disabled', false);
             }
             else {
                 $(e.target).addClass('filter-selected');
-                $("#filter_" + filterType).value($(e.target).text().split(':')[0]);
-                
-                for (var option in options) {
-                    $(option.target).addClass('filter-disabled');
-                }
+                $("#filter_" + filterType).val($(e.target).data('id'));
+
+                $(options).addClass('filter-disabled').prop('disabled', true);
             }
         }
     });

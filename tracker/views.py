@@ -5,20 +5,23 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
-from django.db.models import F
+from django.db.models import Count
+import django.db.models as models
 
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
 
 def post_list(request):
     user = User.objects.get(id=1) # user which is logged in
     user_trackers = Tracker.objects.filter(created_by=user) # trackers which this user has created
-    user_posts = Post.objects.filter(trackers_in=user_trackers).distinct() # all posts which belong to these trackers and without duplication
+    user_posts = Post.objects.filter(trackers__in=user_trackers).distinct() # all posts which belong to these trackers and without duplication
     
     q = request.GET.get('q')
-    selected_trackers = request.GET.getlist('trackers')
-    selected_tracker_categories = request.GET.getlist('tracker_categories')
-    selected_time = request.GET.get('timeFrom', '')
-    selected_relevancy = request.GET.get('relevancy', '')
+    selected_trackers = request.GET.get('tracker')
+    selected_tracker_categories = request.GET.get('tracker_category')
+    selected_relevancy = request.GET.get('relevancy', None)
+
+    #if '' in selected_trackers: selected_trackers.remove('')
+    #if '' in selected_tracker_categories: selected_tracker_categories.remove('')
 
     query = None
     rank_annotation = None
@@ -28,55 +31,40 @@ def post_list(request):
 
     if q:
         query = SearchQuery(q)
-        rank_annotation = SearchRank(F('search_document'), query)
-        values.append('rank')
+        rank_annotation = SearchRank(models.F('search_document'), query)
+        required_values.append('rank')
+
+        filtered_posts = user_posts.filter(search_document=query).annotate(rank=rank_annotation).order_by('-rank')
+    else:
+        filtered_posts = user_posts.order_by('-published')
     
-    # Start with a .none() queryset just so we can union stuff onto it
-    qs = Post.objects.annotate(
-        type=models.Value('empty', output_field=models.CharField())
-    )
-    # add rank as annotation
-    if q:
-        qs = qs.annotate(rank=rank_annotation)
-    qs = qs.values(*required_values).none()
-        
+    # filters
     tracker_counts = {}
     tracker_category_counts = {}
     relevancy_counts = {'Starred': 0, 'Removed': 0}
 
-    for tracker in selected_trackers:
-        qs = qs.filter()
+    tracker_counts = user_trackers.filter(post__in=filtered_posts).annotate(count=Count('post')).values('id', 'name', 'count').order_by('-count')
+    tracker_category_counts = TrackerCategory.objects.filter(tracker__post__in=filtered_posts).annotate(count=Count('tracker')).values('id', 'name', 'count').order_by('-count')
+    relevancy_counts = UserPostRelevant.objects.filter(post__in=filtered_posts).values('relevancy').annotate(count=Count('relevancy'))
+    relevancy_counts = [
+        {'id': item['relevancy'], 'name': ('Starred' if (item['relevancy']==1) else 'Removed'), 'count': item['count']}
+        for item in relevancy_counts
+    ]
 
-    for post in filtered_posts:
-        for tracker in post.trackers.all():
-            if tracker.name in tracker_counts:
-                tracker_counts[tracker.name] += 1
-            else:
-                tracker_counts[tracker.name] = 1
-
-            if tracker.category.name in tracker_category_counts:
-                tracker_category_counts[tracker.category.name] += 1
-            else:
-                tracker_category_counts[tracker.category.name] = 1
-
-    tracker_counts = sorted(
-        [
-            {'name': name, 'count': value}
-            for name, value in list(tracker_counts.items())
-        ],
-        key=lambda t: t['count'], reverse=True
-    )
-
-    tracker_category_counts = sorted(
-        [
-            {'name': name, 'count': value}
-            for name, value in list(tracker_category_counts.items())
-        ],
-        key=lambda t: t['count'], reverse=True
-    )
-    # page = request.GET.get('page', 1)
-    # paginator = Paginator(filtered_posts, 20)
+    if selected_trackers:
+        filtered_posts = filtered_posts.filter(trackers__id__in=selected_trackers)
+        selected_trackers = int(selected_trackers)
     
+    if selected_tracker_categories:
+        filtered_posts = filtered_posts.filter(trackers__category__id__in=selected_tracker_categories)
+        selected_tracker_categories = int(selected_tracker_categories)
+
+    if selected_relevancy:
+        filtered_posts = filtered_posts.filter(userpostrelevant__relevancy=selected_relevancy)
+        selected_relevancy = int(selected_relevancy)
+    else:
+        filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
+
     # try:
     #     filtered_posts_page = paginator.page(page)
     # except PageNotAnInteger:
@@ -106,11 +94,11 @@ def post_list(request):
         if post_relevancy:
             if post_relevancy[0].relevancy == 1:
                 data['starred'] = 'true'
-                data['irrelevant'] = 'false'
+                data['removed'] = 'false'
             
             if post_relevancy[0].relevancy == 2:
                 data['starred'] = 'false'
-                data['irrelevant'] = 'true'
+                data['removed'] = 'true'
         
         if post_read:
             data['read'] = 'true'
@@ -119,13 +107,26 @@ def post_list(request):
         
         filtered_posts_page_data.append(data)
 
+    selected_filters = {
+        'tracker_categories': selected_tracker_categories,
+        'trackers': selected_trackers,
+    }
+    
+    # remove empty keys
+    selected_filters = {
+        key: value
+        for key, value in list(selected_filters.items())
+        if value
+    }
+
     context = {
         'latest_post_list': filtered_posts_page_data,
         'q': q,
         'total': len(filtered_posts_page_data),
         'filters': [
-            {'type': 'tracker_category', 'counts': tracker_category_counts},
-            {'type': 'tracker', 'counts': tracker_counts},
+            {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
+            {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_trackers},
+            {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
         ],
         # 'page': paginator.page,
     }
@@ -213,28 +214,32 @@ def set_user_attr(request):
                 UserPostRelevant.objects.create(user=user, post=post, relevancy=1)
                 data['starred'] = 'true'
             
-            elif post_relevancy[0].relevancy == 1: # already starred
+            elif post_relevancy[0].relevancy == UserPostRelevant.STARRED: # already starred
                 post_relevancy[0].delete()
                 data['starred'] = 'false'
             
-            elif post_relevancy[0].relevancy == 2: # marked irrelevant
-                post_relevancy[0].relevancy = 1
+            elif post_relevancy[0].relevancy == UserPostRelevant.REMOVED: # marked removed
+                post_relevancy[0].relevancy = UserPostRelevant.STARRED
                 data['starred'] = 'true'
+                data['removed'] = 'false'
+                post_relevancy[0].save()
         
-        elif action == 'toggle_irrelevant':
+        elif action == 'toggle_removed':
             post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
             
             if not post_relevancy:  # neither starred not irrelevant
                 UserPostRelevant.objects.create(user=user, post=post, relevancy=2)
                 data['removed'] = 'true'
             
-            elif post_relevancy[0].relevancy == 2: # already irrelevant
+            elif post_relevancy[0].relevancy == UserPostRelevant.REMOVED: # already removed
                 post_relevancy[0].delete()
                 data['removed'] = 'false'
             
-            elif post_relevancy[0].relevancy == 1: # marked starred
-                post_relevancy[0].relevancy = 2
+            elif post_relevancy[0].relevancy == UserPostRelevant.STARRED: # marked starred
+                post_relevancy[0].relevancy = UserPostRelevant.REMOVED
                 data['removed'] = 'true'
+                data['starred'] = 'false'
+                post_relevancy[0].save()
         
         elif action == 'toggle_read':
             post_read = user.read_posts.filter(uuid=post.uuid)
@@ -244,7 +249,7 @@ def set_user_attr(request):
                 data['read'] = 'true'
             
             else: # read
-                post_read[0].delete()
+                user.read_posts.remove(post_read[0])
                 data['read'] = 'false'
 
         return HttpResponse(JsonResponse(data), content_type="application/json")

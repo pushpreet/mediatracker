@@ -114,10 +114,14 @@ class Post(models.Model):
         return self.title
 
 class UserPostRelevant(models.Model):
+    DEFAULT = 0
+    STARRED = 1
+    REMOVED = 2
+
     RELEVANCY_CHOICES = (
-        (0, 'Default'),
-        (1, 'Starred'),
-        (2, 'Removed'),
+        (DEFAULT, 'Default'),
+        (STARRED, 'Starred'),
+        (REMOVED, 'Removed'),
     )
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
