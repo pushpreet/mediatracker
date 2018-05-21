@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
-from django.http import HttpResponseRedirect, Http404, JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -22,7 +22,6 @@ def post_list(request):
 
     query = None
     rank_annotation = None
-    required_values = ['pk']
 
     filtered_posts = None
 
@@ -62,18 +61,9 @@ def post_list(request):
     else:
         filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
 
-    # try:
-    #     filtered_posts_page = paginator.page(page)
-    # except PageNotAnInteger:
-    #     filtered_posts_page = paginator.page(1)
-    # except EmptyPage:
-    #     filtered_posts_page = paginator.page(paginator.num_pages)
-    
-    filtered_posts_page = filtered_posts
+    filtered_posts_data = []
 
-    filtered_posts_page_data = []
-
-    for post in filtered_posts_page:
+    for post in filtered_posts:
         data = {}
         data['uuid'] = post.uuid
         data['url'] = post.url
@@ -89,11 +79,11 @@ def post_list(request):
         post_read = User.objects.filter(id=user.id, read_posts=post)
 
         if post_relevancy:
-            if post_relevancy[0].relevancy == 1:
+            if post_relevancy[0].relevancy == UserPostRelevant.STARRED:
                 data['starred'] = 'true'
                 data['removed'] = 'false'
             
-            if post_relevancy[0].relevancy == 2:
+            if post_relevancy[0].relevancy == UserPostRelevant.REMOVED:
                 data['starred'] = 'false'
                 data['removed'] = 'true'
         
@@ -102,21 +92,37 @@ def post_list(request):
         else:
             data['read'] = 'false'
         
-        filtered_posts_page_data.append(data)
+        filtered_posts_data.append(data)
+    
+    paginator = Paginator(filtered_posts_data, 30)
 
-    context = {
-        'latest_post_list': filtered_posts_page_data,
-        'q': q,
-        'total': len(filtered_posts_page_data),
-        'filters': [
-            {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
-            {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_trackers},
-            {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
-        ],
-        # 'page': paginator.page,
-    }
+    if request.is_ajax():
+        page_number = request.GET.get('page')
+        try:
+            filtered_posts_data = paginator.page(page_number)
+        except PageNotAnInteger as err:
+            return HttpResponseBadRequest(content='Error when processing Response: {}'.format(err))
+        except EmptyPage as err:
+            return HttpResponseBadRequest(content='Error when processing Response: {}'.format(err))
+        
+        return render(request, 'tracker/post_list_page.html', {'filtered_posts': filtered_posts_data})
+    
+    else:
+        filtered_posts_data = paginator.page(1)
 
-    return render(request, 'tracker/post_list.html', context)
+        context = {
+            'filtered_posts': filtered_posts_data,
+            'q': q,
+            'total': paginator.count,
+            'filters': [
+                {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
+                {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_trackers},
+                {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
+            ],
+            'page': paginator.page,
+        }
+
+        return render(request, 'tracker/post_list.html', context)
 
 class PostDetailView(generic.DetailView):
     model = Post

@@ -1,0 +1,50 @@
+{% load humanize %}
+
+{% for post in filtered_posts %}
+    <div class="d-flex flex-row post-card" style="margin-left: 0px; margin-right: 0px;">
+        <div class="card flex-item">
+            <div class="card-body">
+                <div class="d-flex flex-row justify-content-between align-items-start">
+                    <div class="flex-item">
+                        <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a><br>
+                        {% for tracker in post.trackers.all %}
+                            <a class="badge badge-info" style="font-size: 0.6rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    {% if post.main_image|length > 0 %}
+                    <div class="col-lg-3 col-md-3 d-none d-md-block">
+                        <a href="{{ post.url }}" class="custom-card">
+                            <img src="{{ post.main_image }}">
+                        </a>
+                    </div>
+                    
+                    <div class="d-flex flex-column col-lg-9 col-md-9 col-sm-12 col-12">
+                    {% else %}
+                    <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
+                    {% endif %}
+                        <div>
+                            <a class="custom-header" href="{% url 'tracker:post_detail' post.uuid %}">
+                                <p class="card-text" style="font-size: 0.9rem;">{{ post.text|truncatechars:450 }}</p>
+                            </a>
+                        </div>
+                        <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
+                            <span style="font-size: 0.75rem;">
+                                {{ post.author|title }} | 
+                                <a href="http://{{ post.site_full }}">{{ post.site_full|slice:"4:" }}</a> | 
+                                {{ post.published|naturaltime }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
+            <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
+            <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
+            <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.removed == 'true' %} removed {% endif %}" style="font-size: 1.1rem;";></i></a>
+        </div>
+    </div>
+{% endfor %}

@@ -19,7 +19,11 @@
         </div>
 
         {% for filter in filters %}
-            <input id="filter_{{ filter.type }}" type="hidden" name="{{ filter.type }}" value="{{ filter.selected }}">
+            {% if filter.selected %}
+                <input id="filter_{{ filter.type }}" type="hidden" name="{{ filter.type }}" value="{{ filter.selected }}">
+            {% else %}
+                <input id="filter_{{ filter.type }}" type="hidden" name="{{ filter.type }}" value="">
+            {% endif %}
         {% endfor %}
     </form>
 
@@ -53,86 +57,116 @@
     </div>
     <hr>
     
-    {% if latest_post_list %}
-        <div class="infinite-container">
-            {% for post in latest_post_list %}
-                <div class="d-flex flex-row infinite-item" style="margin-left: 0px; margin-right: 0px;">
-                    <div class="card flex-item">
-                        <div class="card-body">
-                            <div class="d-flex flex-row justify-content-between align-items-start">
-                                <div class="flex-item">
-                                    <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a><br>
-                                    {% for tracker in post.trackers.all %}
-                                        <a class="badge badge-info" style="font-size: 0.6rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
-                                    {% endfor %}
-                                </div>
+    {% if filtered_posts %}     
+        {% for post in filtered_posts %}
+            <div class="d-flex flex-row post-card" style="margin-left: 0px; margin-right: 0px;">
+                <div class="card flex-item">
+                    <div class="card-body">
+                        <div class="d-flex flex-row justify-content-between align-items-start">
+                            <div class="flex-item">
+                                <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a><br>
+                                {% for tracker in post.trackers.all %}
+                                    <a class="badge badge-info" style="font-size: 0.6rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
+                                {% endfor %}
                             </div>
-                            <hr>
-                            <div class="row">
-                                {% if post.main_image|length > 0 %}
-                                <div class="col-lg-3 col-md-3 d-none d-md-block">
-                                    <a href="{{ post.url }}" class="custom-card">
-                                        <img src="{{ post.main_image }}">
+                        </div>
+                        <hr>
+                        <div class="row">
+                            {% if post.main_image|length > 0 %}
+                            <div class="col-lg-3 col-md-3 d-none d-md-block">
+                                <a href="{{ post.url }}" class="custom-card">
+                                    <img src="{{ post.main_image }}">
+                                </a>
+                            </div>
+                            
+                            <div class="d-flex flex-column col-lg-9 col-md-9 col-sm-12 col-12">
+                            {% else %}
+                            <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
+                            {% endif %}
+                                <div>
+                                    <a class="custom-header" href="{% url 'tracker:post_detail' post.uuid %}">
+                                        <p class="card-text" style="font-size: 0.9rem;">{{ post.text|truncatechars:450 }}</p>
                                     </a>
                                 </div>
-                                
-                                <div class="d-flex flex-column col-lg-9 col-md-9 col-sm-12 col-12">
-                                {% else %}
-                                <div class="d-flex flex-column col-lg-12 col-md-12 col-sm-12 col-12">
-                                {% endif %}
-                                    <div>
-                                        <a class="custom-header" href="{% url 'tracker:post_detail' post.uuid %}">
-                                            <p class="card-text" style="font-size: 0.9rem;">{{ post.text|truncatechars:450 }}</p>
-                                        </a>
-                                    </div>
-                                    <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
-                                        <span style="font-size: 0.75rem;">
-                                            {{ post.author|title }} | 
-                                            <a href="http://{{ post.site_full }}">{{ post.site_full|slice:"4:" }}</a> | 
-                                            {{ post.published|naturaltime }}
-                                        </span>
-                                    </div>
+                                <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
+                                    <span style="font-size: 0.75rem;">
+                                        {{ post.author|title }} | 
+                                        <a href="http://{{ post.site_full }}">{{ post.site_full|slice:"4:" }}</a> | 
+                                        {{ post.published|naturaltime }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
-                        <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
-                        <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
-                        <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.removed == 'true' %} removed {% endif %}" style="font-size: 1.1rem;";></i></a>
-                    </div>
                 </div>
-            {% endfor %}
-        </div>
+                <div class="d-flex flex-column justify-content-center align-items-center action-panel" data-postid="{{ post.uuid }}">
+                    <a class="action-item" href="#"><i class="fas fa-star fa-fw {% if post.starred == 'true' %} starred {% endif %}" style="font-size: 1rem;"></i></a>
+                    <a class="action-item" href="#"><i class="fas fa-check fa-fw {% if post.read == 'true' %} read {% endif %}" style="font-size: 1rem;";></i></a>
+                    <a class="action-item" href="#"><i class="fas fa-times fa-fw {% if post.removed == 'true' %} removed {% endif %}" style="font-size: 1.1rem;";></i></a>
+                </div>
+            </div>
+        {% endfor %}
+        <div id="post-list-anchor"></div>
     {% else %}
         <p>No posts are available.</p>
     {% endif %}
     
-    {% comment %} <div class="loading" style="display: none;">
+    <div class="loading" style="display: none;">
         Loading...
     </div>
-
-    {% if latest_post_list.has_next %}
-        <a class="infinite-more-link" href="?page={{ latest_post_list.next_page_number }}">More</a>
-    {% endif %} {% endcomment %}
     
 {% endblock %}
 
 {% block javascript %}
   <script>
-    /*
-    var infinite = new Waypoint.Infinite({
-        element: $('.infinite-container')[0],
-        onBeforePageLoad: function () {
-            console.log($('.infinite-container')[0],"onBefore");
-            $('.loading').show();
-        },
-        onAfterPageLoad: function ($items) {
-            console.log($('.infinite-container')[0],"onAfter");
-            $('.loading').hide();
-        }
+    var current_page_number = 1;
+    var hasNextPage = true;
+
+    $(document).ready(function(){     
+        $(window).bind('scroll', loadOnScroll);
     });
-    */
+
+    var loadOnScroll = function() {
+        // If the current scroll position is past out cutoff point...
+        if ($(window).scrollTop() > ($(document).height()-1500)) {
+            // temporarily unhook the scroll event watcher so we don't call a bunch of times in a row
+            $(window).unbind(); 
+            // execute the load function below that will visit the JSON feed and stuff data into the HTML
+            loadItems();
+        }
+    };
+
+    var loadItems = function() {
+        if (hasNextPage) {
+            var formElement = document.querySelector("form");
+            var formData = new FormData(formElement);
+            formData.append("page", current_page_number + 1);
+            
+            var query = '';
+            for (var [key, value] of formData.entries()) { 
+                query += key + '=' + value + '&';
+            }
+            // Configure the url we're about to hit
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'tracker:post_list' %}?" + query,
+                success: function(data) {
+                    $('#post-list-anchor').before(data);
+                    current_page_number += 1;
+                },
+                error: function(data) {
+                    hasNextPage = false;
+                },
+                complete: function(data, textStatus){
+                    // Turn the scroll monitor back on
+                    $(window).bind('scroll', loadOnScroll);
+                }
+            });
+        }
+        else {
+            return false;
+        }
+    };
 
     $('#filters').collapse({
         toggle: false
