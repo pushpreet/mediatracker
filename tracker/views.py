@@ -20,9 +20,6 @@ def post_list(request):
     selected_tracker_categories = request.GET.get('tracker_category')
     selected_relevancy = request.GET.get('relevancy', None)
 
-    #if '' in selected_trackers: selected_trackers.remove('')
-    #if '' in selected_tracker_categories: selected_tracker_categories.remove('')
-
     query = None
     rank_annotation = None
     required_values = ['pk']
@@ -106,18 +103,6 @@ def post_list(request):
             data['read'] = 'false'
         
         filtered_posts_page_data.append(data)
-
-    selected_filters = {
-        'tracker_categories': selected_tracker_categories,
-        'trackers': selected_trackers,
-    }
-    
-    # remove empty keys
-    selected_filters = {
-        key: value
-        for key, value in list(selected_filters.items())
-        if value
-    }
 
     context = {
         'latest_post_list': filtered_posts_page_data,
