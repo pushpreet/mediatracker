@@ -65,3 +65,9 @@ img {
 .filter-disabled {
     color: #bdc3c7;
 }
+
+.loading {
+    color: gray;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}

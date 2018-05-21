@@ -111,8 +111,8 @@
         <p>No posts are available.</p>
     {% endif %}
     
-    <div class="loading" style="display: none;">
-        Loading...
+    <div class="col-lg-12 text-center loading" style="display: none;">
+        <em>Loading...</em>
     </div>
     
 {% endblock %}
@@ -138,6 +138,7 @@
 
     var loadItems = function() {
         if (hasNextPage) {
+            $('.loading').show();
             var formElement = document.querySelector("form");
             var formData = new FormData(formElement);
             formData.append("page", current_page_number + 1);
@@ -160,6 +161,7 @@
                 complete: function(data, textStatus){
                     // Turn the scroll monitor back on
                     $(window).bind('scroll', loadOnScroll);
+                    $('.loading').hide();
                 }
             });
         }
