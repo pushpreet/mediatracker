@@ -11,15 +11,16 @@ import django.db.models as models
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
 
 def post_list(request):
+    start_time = timezone.now().timestamp()
     user = User.objects.get(id=1) # user which is logged in
     user_trackers = Tracker.objects.filter(created_by=user) # trackers which this user has created
     user_posts = Post.objects.filter(trackers__in=user_trackers).distinct() # all posts which belong to these trackers and without duplication
-    
+    print("%f: Got all posts."%(timezone.now().timestamp()-start_time))
     q = request.GET.get('q')
     selected_trackers = request.GET.get('tracker')
     selected_tracker_categories = request.GET.get('tracker_category')
     selected_relevancy = request.GET.get('relevancy', None)
-
+    print("%f: Got get paramaters."%(timezone.now().timestamp()-start_time))
     query = None
     rank_annotation = None
 
@@ -32,7 +33,7 @@ def post_list(request):
         filtered_posts = user_posts.filter(search_document=query).annotate(rank=rank_annotation).order_by('-rank')
     else:
         filtered_posts = user_posts.order_by('-published')
-    
+    print("%f: Got filtered posts by query."%(timezone.now().timestamp()-start_time))
     # filters
     tracker_counts = {}
     tracker_category_counts = {}
@@ -45,7 +46,7 @@ def post_list(request):
         {'id': item['relevancy'], 'name': ('Starred' if (item['relevancy']==1) else 'Removed'), 'count': item['count']}
         for item in relevancy_counts
     ]
-
+    print("%f: Got filter counts."%(timezone.now().timestamp()-start_time))
     if selected_trackers:
         filtered_posts = filtered_posts.filter(trackers__id__in=selected_trackers)
         selected_trackers = int(selected_trackers)
@@ -59,7 +60,7 @@ def post_list(request):
         selected_relevancy = int(selected_relevancy)
     else:
         filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
-
+    print("%f: Got filtered results."%(timezone.now().timestamp()-start_time))
     filtered_posts_data = []
 
     for post in filtered_posts:
@@ -92,7 +93,7 @@ def post_list(request):
             data['read'] = 'false'
         
         filtered_posts_data.append(data)
-    
+    print("%f: Got filtered results with relevancy."%(timezone.now().timestamp()-start_time))
     paginator = Paginator(filtered_posts_data, 30)
 
     if request.is_ajax():

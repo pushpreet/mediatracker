@@ -7,6 +7,8 @@ from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GinIndex
 from datetime import timedelta, datetime
 
+from django.db.utils import DataError
+
 # Create your models here.
 class User(models.Model):
     name = models.CharField(max_length=255)
@@ -39,7 +41,7 @@ class Tracker(models.Model):
     def update(self):
         crawledFrom = self.last_updated.timestamp()
         if abs(self.last_updated - self.last_modified) < timedelta(seconds=1):
-            crawledFrom = (timezone.now() - timedelta(days=7)).timestamp()
+            crawledFrom = (timezone.now() - timedelta(days=3)).timestamp()
         
         crawledFrom = int(crawledFrom*1000)
         
@@ -80,30 +82,35 @@ class Tracker(models.Model):
                     old_post.trackers.add(self)
 
             else:
-                new_post = Post(
-                    uuid = post['thread']['uuid'],
-                    url = post['thread']['url'],
-                    site_full = post['thread']['site_full'],
-                    site_categories = post['thread']['site_categories'],
-                    title = post['thread']['title'],
-                    published = post['thread']['published'],
-                    site_type = post['thread']['site_type'],
-                    country = post['thread']['country'],
-                    main_image = post['thread']['main_image'],
-                    performance_score = post['thread']['performance_score'],
-                    domain_rank = post['thread']['domain_rank'],
-                    author = post['author'],
-                    text = post['text'],
-                    language = post['language'],
-                    entities = post['entities'],
-                    social = post['thread']['social'],
-                )
+                try:
+                    new_post = Post(
+                        uuid = post['thread']['uuid'],
+                        url = post['thread']['url'],
+                        site_full = post['thread']['site_full'],
+                        site_categories = post['thread']['site_categories'],
+                        title = post['thread']['title'][:1024],
+                        published = post['thread']['published'],
+                        site_type = post['thread']['site_type'],
+                        country = post['thread']['country'],
+                        main_image = post['thread']['main_image'],
+                        performance_score = post['thread']['performance_score'],
+                        domain_rank = post['thread']['domain_rank'],
+                        author = post['author'],
+                        text = post['text'],
+                        language = post['language'],
+                        entities = post['entities'],
+                        social = post['thread']['social'],
+                    )
 
-                new_post.save()
-                new_post.trackers.add(self)
+                    new_post.save()
+                    new_post.trackers.add(self)
+                    
+                    previous_posts_uuid.append(post['thread']['uuid'])
+                    previous_posts_title.append(post['thread']['title'].lower())
                 
-                previous_posts_uuid.append(post['thread']['uuid'])
-                previous_posts_title.append(post['thread']['title'].lower())
+                except DataError as err:
+                    print("Error: %s"%(err))
+                    print(post)
 
         self.last_updated = timezone.now()
         self.save()
@@ -112,17 +119,17 @@ class Tracker(models.Model):
 
 class Post(models.Model):
     uuid = models.CharField(primary_key=True, max_length=40)
-    url = models.URLField(max_length=1024)
-    site_full = models.URLField(max_length=1024)
+    url = models.URLField(max_length=512)
+    site_full = models.URLField(max_length=512)
     site_categories = models.TextField()
     title = models.CharField(max_length=1024)
     published = models.DateTimeField()
     site_type = models.CharField(max_length=30)
     country = models.CharField(max_length=30)
-    main_image = models.URLField(max_length=1024, null=True)
+    main_image = models.URLField(max_length=512, null=True)
     performance_score = models.PositiveSmallIntegerField()
     domain_rank = models.PositiveIntegerField(null=True)
-    author = models.CharField(max_length=1024)
+    author = models.CharField(max_length=255)
     text = models.TextField()
     language = models.CharField(max_length=30)
     entities = models.TextField()
