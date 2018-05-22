@@ -6,26 +6,28 @@ from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import Count
+from django.db.models import CharField, Case, When, Value
 import django.db.models as models
 
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
 
 def post_list(request):
-    start_time = timezone.now().timestamp()
+    ### get all posts by the current user
     user = User.objects.get(id=1) # user which is logged in
     user_trackers = Tracker.objects.filter(created_by=user) # trackers which this user has created
     user_posts = Post.objects.filter(trackers__in=user_trackers).distinct() # all posts which belong to these trackers and without duplication
-    print("%f: Got all posts."%(timezone.now().timestamp()-start_time))
+    
+    ### get all form paramters
     q = request.GET.get('q')
     selected_trackers = request.GET.get('tracker')
     selected_tracker_categories = request.GET.get('tracker_category')
     selected_relevancy = request.GET.get('relevancy', None)
-    print("%f: Got get paramaters."%(timezone.now().timestamp()-start_time))
+    
     query = None
     rank_annotation = None
-
     filtered_posts = None
 
+    ### get and order all which match the query
     if q:
         query = SearchQuery(q)
         rank_annotation = SearchRank(models.F('search_document'), query)
@@ -33,8 +35,8 @@ def post_list(request):
         filtered_posts = user_posts.filter(search_document=query).annotate(rank=rank_annotation).order_by('-rank')
     else:
         filtered_posts = user_posts.order_by('-published')
-    print("%f: Got filtered posts by query."%(timezone.now().timestamp()-start_time))
-    # filters
+    
+    ### calculate counts for filters
     tracker_counts = {}
     tracker_category_counts = {}
     relevancy_counts = {'Starred': 0, 'Removed': 0}
@@ -46,7 +48,8 @@ def post_list(request):
         {'id': item['relevancy'], 'name': ('Starred' if (item['relevancy']==1) else 'Removed'), 'count': item['count']}
         for item in relevancy_counts
     ]
-    print("%f: Got filter counts."%(timezone.now().timestamp()-start_time))
+    
+    ### filter posts by form selection
     if selected_trackers:
         filtered_posts = filtered_posts.filter(trackers__id__in=selected_trackers)
         selected_trackers = int(selected_trackers)
@@ -60,58 +63,46 @@ def post_list(request):
         selected_relevancy = int(selected_relevancy)
     else:
         filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
-    print("%f: Got filtered results."%(timezone.now().timestamp()-start_time))
-    filtered_posts_data = []
+    
+    ### add starred, removed and read flags
+    filtered_posts = filtered_posts.annotate(
+        starred=Case(
+            When(userpostrelevant__relevancy=1, userpostrelevant__user=user, then=Value('true')),
+            defualt=Value('false'), 
+            output_field=CharField()
+        ),
+        removed=Case(
+            When(userpostrelevant__relevancy=2, userpostrelevant__user=user, then=Value('true')),
+            defualt=Value('false'), 
+            output_field=CharField()
+        ),
+        read=Case(
+            When(read_posts=user, then=Value('true')),
+            defualt=Value('false'), 
+            output_field=CharField()
+        ),
+    )
 
-    for post in filtered_posts:
-        data = {}
-        data['uuid'] = post.uuid
-        data['url'] = post.url
-        data['title'] = post.title
-        data['main_image'] = post.main_image
-        data['author'] = post.author
-        data['site_full'] = post.site_full
-        data['published'] = post.published
-        data['text'] = post.text
-        data['trackers'] = post.trackers
-
-        post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
-        post_read = User.objects.filter(id=user.id, read_posts=post)
-
-        if post_relevancy:
-            if post_relevancy[0].relevancy == UserPostRelevant.STARRED:
-                data['starred'] = 'true'
-                data['removed'] = 'false'
-            
-            if post_relevancy[0].relevancy == UserPostRelevant.REMOVED:
-                data['starred'] = 'false'
-                data['removed'] = 'true'
-        
-        if post_read:
-            data['read'] = 'true'
-        else:
-            data['read'] = 'false'
-        
-        filtered_posts_data.append(data)
-    print("%f: Got filtered results with relevancy."%(timezone.now().timestamp()-start_time))
-    paginator = Paginator(filtered_posts_data, 30)
-
+    ### paginate
+    paginator = Paginator(filtered_posts, 30)
+    
+    ### if ajax request, return only page
     if request.is_ajax():
         page_number = request.GET.get('page')
         try:
-            filtered_posts_data = paginator.page(page_number)
+            filtered_posts = paginator.page(page_number)
         except PageNotAnInteger as err:
             return HttpResponseBadRequest(content='Error when processing Response: {}'.format(err))
         except EmptyPage as err:
             return HttpResponseBadRequest(content='Error when processing Response: {}'.format(err))
         
-        return render(request, 'tracker/post_list_page.html', {'filtered_posts': filtered_posts_data})
+        return render(request, 'tracker/post_list_page.html', {'filtered_posts': filtered_posts})
     
+    ### if normal request, send first page
     else:
-        filtered_posts_data = paginator.page(1)
-
+        filtered_posts = paginator.page(1)
         context = {
-            'filtered_posts': filtered_posts_data,
+            'filtered_posts': filtered_posts,
             'q': q,
             'total': paginator.count,
             'filters': [
