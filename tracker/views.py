@@ -5,8 +5,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
-from django.db.models import Count
-from django.db.models import CharField, Case, When, Value
+from django.db.models import Count, Sum
+from django.db.models import CharField, Case, When, Value, IntegerField
 import django.db.models as models
 
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
@@ -36,19 +36,6 @@ def post_list(request):
     else:
         filtered_posts = user_posts.order_by('-published')
     
-    ### calculate counts for filters
-    tracker_counts = {}
-    tracker_category_counts = {}
-    relevancy_counts = {'Starred': 0, 'Removed': 0}
-
-    tracker_counts = user_trackers.filter(post__in=filtered_posts).annotate(count=Count('post')).values('id', 'name', 'count').order_by('-count')
-    tracker_category_counts = TrackerCategory.objects.filter(tracker__post__in=filtered_posts).annotate(count=Count('tracker')).values('id', 'name', 'count').order_by('-count')
-    relevancy_counts = UserPostRelevant.objects.filter(post__in=filtered_posts).values('relevancy').annotate(count=Count('relevancy'))
-    relevancy_counts = [
-        {'id': item['relevancy'], 'name': ('Starred' if (item['relevancy']==1) else 'Removed'), 'count': item['count']}
-        for item in relevancy_counts
-    ]
-    
     ### filter posts by form selection
     if selected_trackers:
         filtered_posts = filtered_posts.filter(trackers__id__in=selected_trackers)
@@ -63,7 +50,7 @@ def post_list(request):
         selected_relevancy = int(selected_relevancy)
     else:
         filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
-    
+
     ### add starred, removed and read flags
     filtered_posts = filtered_posts.annotate(
         starred=Case(
@@ -82,6 +69,23 @@ def post_list(request):
             output_field=CharField()
         ),
     )
+
+    ### calculate counts for filters
+    tracker_counts = user_trackers.annotate(
+        count=Count(Case(
+            When(post__in=filtered_posts, then=Value(1))
+        ))
+    ).values('id', 'name', 'count').order_by('-count')
+
+    tracker_category_counts = TrackerCategory.objects.annotate(count=Count(Case(
+            When(tracker__post__in=filtered_posts, then=Value(1))
+        ))
+    ).values('id', 'name', 'count').order_by('-count')
+
+    relevancy_counts = [
+        {'id': 1, 'name': 'Starred', 'count': len(filtered_posts.filter(starred='true'))},
+        {'id': 2, 'name': 'Removed', 'count': len(filtered_posts.filter(removed='true'))}
+    ]
 
     ### paginate
     paginator = Paginator(filtered_posts, 30)
@@ -106,7 +110,7 @@ def post_list(request):
             'q': q,
             'total': paginator.count,
             'filters': [
-                # {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
+                {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
                 {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_trackers},
                 {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
             ],

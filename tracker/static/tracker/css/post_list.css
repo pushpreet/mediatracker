@@ -77,3 +77,10 @@ img {
     font-size: 0.8rem;
     margin-bottom: 1rem;
 }
+
+.separator {
+    background-color: #bdc3c7;
+    width: 1px;
+    margin: 0.5rem;
+    height: 4rem;
+  }
