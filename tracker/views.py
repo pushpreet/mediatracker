@@ -174,7 +174,7 @@ def edit_tracker(request):
 
         tracker.name = tracker_name
         tracker.query = tracker_query
-
+        tracker.last_modified = timezone.now()
         tracker.save()
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))

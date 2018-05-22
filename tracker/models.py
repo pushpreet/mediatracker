@@ -29,7 +29,7 @@ class Tracker(models.Model):
     name = models.CharField(max_length=200)
     query = models.TextField(null=True)
     color = models.CharField(max_length=7, default='#e67e22')
-    last_modified = models.DateTimeField(auto_now=True)
+    last_modified = models.DateTimeField()
     last_updated = models.DateTimeField(null=True)
     auto_refresh = models.BooleanField(default=False)
     created_by = models.ForeignKey(User, models.SET_NULL, null=True)
