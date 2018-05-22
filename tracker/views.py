@@ -163,7 +163,7 @@ def add_tracker(request):
         last_modified = timezone.now(),
         last_updated = timezone.now(),
         created_by = User.objects.get(name = 'Pushpreet'),
-        category = TrackerCategory.objects.get(name = 'Test')
+        category = TrackerCategory.objects.get(name = 'General')
     )
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
