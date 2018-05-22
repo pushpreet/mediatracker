@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.indexes import GinIndex
+from datetime import timedelta, datetime
 
 # Create your models here.
 class User(models.Model):
@@ -36,19 +37,39 @@ class Tracker(models.Model):
         return self.name
 
     def update(self):
+        crawledFrom = self.last_updated.timestamp()
+        if abs(self.last_updated - self.last_modified) < timedelta(seconds=1):
+            crawledFrom = (timezone.now() - timedelta(days=7)).timestamp()
+        
+        crawledFrom = int(crawledFrom*1000)
+
         webhoseio.config(token='e187b1d6-59c5-4b3b-9614-1c42b3e3658e')
-        output = webhoseio.query("filterWebContent", {"q": self.query})
+        output = webhoseio.query(
+            "filterWebContent", 
+            {
+                "q": self.query,
+                "order": "desc",
+                "ts": crawledFrom,
+            })
+        print(output['totalResults'])
+        output = output['posts']
+        while True:
+            temp = webhoseio.get_next()
+            output += temp['posts']
+            print(temp['moreResultsAvailable'])
+            if temp['moreResultsAvailable'] <= 0:
+                break
 
         previous_posts_uuid = [post.uuid for post in Post.objects.all()]
-        previous_posts_title = [post.title for post in Post.objects.all()]
-        for post in output['posts']:
+        previous_posts_title = [post.title.lower() for post in Post.objects.all()]
+        for post in output:
             if post['thread']['uuid'] in previous_posts_uuid:
                 old_post = Post.objects.get(uuid = post['thread']['uuid'])
                 if self not in old_post.trackers.all():
                     old_post.trackers.add(self)
             
-            elif post['thread']['title_full'] in previous_posts_title:
-                old_post = Post.objects.get(title = post['thread']['title_full'])
+            elif post['thread']['title'].lower() in previous_posts_title:
+                old_post = Post.objects.get(title__iexact = post['thread']['title'])
                 if self not in old_post.trackers.all():
                     old_post.trackers.add(self)
 
@@ -58,7 +79,7 @@ class Tracker(models.Model):
                     url = post['thread']['url'],
                     site_full = post['thread']['site_full'],
                     site_categories = post['thread']['site_categories'],
-                    title = post['thread']['title_full'],
+                    title = post['thread']['title'],
                     published = post['thread']['published'],
                     site_type = post['thread']['site_type'],
                     country = post['thread']['country'],
@@ -74,6 +95,9 @@ class Tracker(models.Model):
 
                 new_post.save()
                 new_post.trackers.add(self)
+                
+                previous_posts_uuid.append(post['thread']['uuid'])
+                previous_posts_title.append(post['thread']['title'].lower())
 
         self.last_updated = timezone.now()
         self.save()
@@ -82,17 +106,17 @@ class Tracker(models.Model):
 
 class Post(models.Model):
     uuid = models.CharField(primary_key=True, max_length=40)
-    url = models.URLField(max_length=500)
-    site_full = models.URLField(max_length=500)
+    url = models.URLField(max_length=512)
+    site_full = models.URLField(max_length=512)
     site_categories = models.TextField()
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=512)
     published = models.DateTimeField()
     site_type = models.CharField(max_length=30)
     country = models.CharField(max_length=30)
     main_image = models.URLField(max_length=1024, null=True)
     performance_score = models.PositiveSmallIntegerField()
     domain_rank = models.PositiveIntegerField(null=True)
-    author = models.CharField(max_length=500)
+    author = models.CharField(max_length=512)
     text = models.TextField()
     language = models.CharField(max_length=30)
     entities = models.TextField()
