@@ -42,26 +42,30 @@ class Tracker(models.Model):
             crawledFrom = (timezone.now() - timedelta(days=7)).timestamp()
         
         crawledFrom = int(crawledFrom*1000)
-
+        
         webhoseio.config(token='e187b1d6-59c5-4b3b-9614-1c42b3e3658e')
         output = webhoseio.query(
             "filterWebContent", 
             {
                 "q": self.query,
-                "order": "desc",
                 "ts": crawledFrom,
             })
         print(output['totalResults'])
         output = output['posts']
         while True:
             temp = webhoseio.get_next()
-            output += temp['posts']
             print(temp['moreResultsAvailable'])
+            output += temp['posts']
             if temp['moreResultsAvailable'] <= 0:
                 break
 
-        previous_posts_uuid = [post.uuid for post in Post.objects.all()]
-        previous_posts_title = [post.title.lower() for post in Post.objects.all()]
+        previous_posts_uuid = []
+        previous_posts_title = []
+        
+        if len(output) > 0:
+            previous_posts_uuid = [post.uuid for post in Post.objects.all()]
+            previous_posts_title = [post.title.lower() for post in Post.objects.all()]
+
         for post in output:
             if post['thread']['uuid'] in previous_posts_uuid:
                 old_post = Post.objects.get(uuid = post['thread']['uuid'])
@@ -106,17 +110,17 @@ class Tracker(models.Model):
 
 class Post(models.Model):
     uuid = models.CharField(primary_key=True, max_length=40)
-    url = models.URLField(max_length=512)
-    site_full = models.URLField(max_length=512)
+    url = models.URLField(max_length=1024)
+    site_full = models.URLField(max_length=1024)
     site_categories = models.TextField()
-    title = models.CharField(max_length=512)
+    title = models.CharField(max_length=1024)
     published = models.DateTimeField()
     site_type = models.CharField(max_length=30)
     country = models.CharField(max_length=30)
     main_image = models.URLField(max_length=1024, null=True)
     performance_score = models.PositiveSmallIntegerField()
     domain_rank = models.PositiveIntegerField(null=True)
-    author = models.CharField(max_length=512)
+    author = models.CharField(max_length=1024)
     text = models.TextField()
     language = models.CharField(max_length=30)
     entities = models.TextField()
