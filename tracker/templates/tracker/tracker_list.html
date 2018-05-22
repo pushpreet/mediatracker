@@ -38,7 +38,7 @@
                     <span class="card-text">
                         {{ tracker.query }}
                     </span>
-                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">{{ tracker.created_by }} | modified {{ tracker.last_modified|naturaltime }} | updated {{ tracker.last_updated|naturaltime }}</p>
+                    <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">modified {{ tracker.last_modified|naturaltime }} | updated {{ tracker.last_updated|naturaltime }}</p>
                 </div>
             </div>
         {% endfor %}

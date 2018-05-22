@@ -114,7 +114,7 @@ def post_list(request):
             'q': q,
             'total': paginator.count,
             'filters': [
-                {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
+                # {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
                 {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_trackers},
                 {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
             ],
