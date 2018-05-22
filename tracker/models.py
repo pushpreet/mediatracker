@@ -39,9 +39,20 @@ class Tracker(models.Model):
         webhoseio.config(token='e187b1d6-59c5-4b3b-9614-1c42b3e3658e')
         output = webhoseio.query("filterWebContent", {"q": self.query})
 
-        previous_posts = [post.uuid for post in Post.objects.all()]
+        previous_posts_uuid = [post.uuid for post in Post.objects.all()]
+        previous_posts_title = [post.title for post in Post.objects.all()]
         for post in output['posts']:
-            if post['thread']['uuid'] not in previous_posts:
+            if post['thread']['uuid'] in previous_posts_uuid:
+                old_post = Post.objects.get(uuid = post['thread']['uuid'])
+                if self not in old_post.trackers.all():
+                    old_post.trackers.add(self)
+            
+            elif post['thread']['title_full'] in previous_posts_title:
+                old_post = Post.objects.get(title = post['thread']['title_full'])
+                if self not in old_post.trackers.all():
+                    old_post.trackers.add(self)
+
+            else:
                 new_post = Post(
                     uuid = post['thread']['uuid'],
                     url = post['thread']['url'],
@@ -63,11 +74,6 @@ class Tracker(models.Model):
 
                 new_post.save()
                 new_post.trackers.add(self)
-            
-            else:
-                old_post = Post.objects.get(uuid = post['thread']['uuid'])
-                if self not in old_post.trackers.all():
-                    old_post.trackers.add(self)    
 
         self.last_updated = timezone.now()
         self.save()

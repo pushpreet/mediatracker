@@ -28,7 +28,6 @@ def post_list(request):
     if q:
         query = SearchQuery(q)
         rank_annotation = SearchRank(models.F('search_document'), query)
-        required_values.append('rank')
 
         filtered_posts = user_posts.filter(search_document=query).annotate(rank=rank_annotation).order_by('-rank')
     else:
