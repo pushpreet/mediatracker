@@ -108,7 +108,9 @@
         {% endfor %}
         <div id="post-list-anchor"></div>
     {% else %}
-        <p>No posts are available.</p>
+        <div class="col-lg-12 no-data">
+            <em>No posts are available.</em>
+        </div>
     {% endif %}
     
     <div class="col-lg-12 text-center loading" style="display: none;">

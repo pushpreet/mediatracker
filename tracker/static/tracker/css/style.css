@@ -47,3 +47,9 @@ body {
   max-width: 940px; 
   padding:0; 
 }
+
+.no-data {
+  color: gray;
+  font-size: 0.8rem;
+  margin-top: 1rem;
+}

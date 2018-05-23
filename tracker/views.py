@@ -5,8 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
-from django.db.models import Count, Sum
-from django.db.models import CharField, Case, When, Value, IntegerField
+from django.db.models import Count, Sum, CharField, Case, When, Value, IntegerField, Q
 import django.db.models as models
 
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
@@ -37,20 +36,20 @@ def post_list(request):
         filtered_posts = user_posts.order_by('-published')
     
     ### filter posts by form selection
-    if selected_trackers:
-        filtered_posts = filtered_posts.filter(trackers__id__in=selected_trackers)
-        selected_trackers = int(selected_trackers)
-    
     if selected_tracker_categories:
-        filtered_posts = filtered_posts.filter(trackers__category__id__in=selected_tracker_categories)
         selected_tracker_categories = int(selected_tracker_categories)
+        filtered_posts = filtered_posts.filter(trackers__category__id=selected_tracker_categories)
 
+    if selected_trackers:
+        selected_trackers = int(selected_trackers)
+        filtered_posts = filtered_posts.filter(trackers__id=selected_trackers)
+    
     if selected_relevancy:
-        filtered_posts = filtered_posts.filter(userpostrelevant__relevancy=selected_relevancy)
         selected_relevancy = int(selected_relevancy)
+        filtered_posts = filtered_posts.filter(userpostrelevant__relevancy=selected_relevancy)
     else:
         filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
-
+    
     ### add starred, removed and read flags
     filtered_posts = filtered_posts.annotate(
         starred=Case(
@@ -125,32 +124,35 @@ class PostDetailView(generic.DetailView):
 
 class TrackerListView(generic.ListView):
     template_name = 'tracker/tracker_list.html'
-    context_object_name = 'tracker_list'
+    context_object_name = 'tracker_category_list'
 
     def get_queryset(self):
-        """ Return the last 10 posts. """
-        return Tracker.objects.all().order_by('-last_modified')
+        tracker_categories = TrackerCategory.objects.order_by('name').values('id', 'name')
+        trackers = Tracker.objects.order_by('category__name', '-last_modified')
+        
+        for tracker in trackers:
+            for category in tracker_categories:
+                if category['name'] == tracker.category.name:
+                    if 'trackers' not in category.keys():
+                        category['trackers'] = [tracker]
+                    else:
+                        category['trackers'].append(tracker)
 
-class TrackerDetailView(generic.DetailView):
-    model = Tracker
-    template_name = 'tracker/tracker_detail.html'
+        return tracker_categories
 
-def refresh_tracker(request, tracker_id):
-    tracker = get_object_or_404(Tracker, pk=tracker_id)
+def add_tracker_category(request):
+    tracker_category_name = request.POST.get('tracker-category-name', False)
     
-    if tracker.update():
-        return HttpResponseRedirect(reverse('tracker:post_list'))
+    TrackerCategory.objects.create(
+        name = tracker_category_name,
+    )
 
-def delete_tracker(request):
-    tracker_id = request.POST.get('tracker-id', False)
-    tracker = get_object_or_404(Tracker, pk=tracker_id)
-    tracker.delete()
-    
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
 
 def add_tracker(request):
     tracker_name = request.POST.get('tracker-name', False)
     tracker_query = request.POST.get('query', False)
+    tracker_category_id = request.POST.get('tracker-category-id', False)
     
     Tracker.objects.create(
         name = tracker_name,
@@ -159,10 +161,16 @@ def add_tracker(request):
         last_modified = timezone.now(),
         last_updated = timezone.now(),
         created_by = User.objects.get(name = 'Pushpreet'),
-        category = TrackerCategory.objects.get(name = 'General')
+        category = TrackerCategory.objects.get(id = int(tracker_category_id))
     )
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
+
+def refresh_tracker(request, tracker_id):
+    tracker = get_object_or_404(Tracker, pk=tracker_id)
+    
+    if tracker.update():
+        return HttpResponseRedirect(reverse('tracker:post_list'))
 
 def edit_tracker(request):
     tracker_id = request.POST.get('tracker-id', False)
@@ -177,6 +185,13 @@ def edit_tracker(request):
         tracker.last_modified = timezone.now()
         tracker.save()
 
+    return HttpResponseRedirect(reverse('tracker:tracker_list'))
+
+def delete_tracker(request):
+    tracker_id = request.POST.get('tracker-id', False)
+    tracker = get_object_or_404(Tracker, pk=tracker_id)
+    tracker.delete()
+    
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
 
 def set_user_attr(request):

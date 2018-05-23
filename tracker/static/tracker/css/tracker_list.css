@@ -1,0 +1,21 @@
+.card {
+    width: 100%;
+}
+
+.post-card {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.section-line {
+    background-color: #bdc3c7;
+    width: 2px;
+    margin: -0.5px 0.5rem;
+    height: 100%;
+}
+
+.category-header {
+    margin-top: 1.5rem;
+}
