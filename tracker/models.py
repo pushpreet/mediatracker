@@ -42,6 +42,7 @@ class Tracker(models.Model):
         crawledFrom = self.last_updated.timestamp()
         if abs(self.last_updated - self.last_modified) < timedelta(seconds=1):
             crawledFrom = (timezone.now() - timedelta(days=3)).timestamp()
+        crawledFrom = int(crawledFrom*1000)
         
         webhoseio.config(token='e187b1d6-59c5-4b3b-9614-1c42b3e3658e')
         output = webhoseio.query(

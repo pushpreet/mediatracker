@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import Count, Sum, CharField, Case, When, Value, IntegerField, Q
+from datetime import timedelta, datetime
+from django.utils import timezone
 import django.db.models as models
 
 from .models import Post, Tracker, User, TrackerCategory, UserPostRelevant
@@ -22,6 +24,7 @@ def post_list(request):
     selected_tracker_category = request.GET.get('tracker_category', None)
     selected_relevancy = request.GET.get('relevancy', None)
     selected_read_status = request.GET.get('read_status', None)
+    selected_time_from = request.GET.get('time_from', None)
     
     query = None
     rank_annotation = None
@@ -56,6 +59,10 @@ def post_list(request):
             filtered_posts = filtered_posts.filter(read_posts=user)
         if selected_read_status == 'false':
             filtered_posts = filtered_posts.exclude(read_posts=user)
+
+    if selected_time_from:
+        selected_time_from = int(selected_time_from)
+        filtered_posts = filtered_posts.filter(published__gt=datetime.fromtimestamp(selected_time_from/1000))
     
     ### add starred, removed and read flags
     filtered_posts = filtered_posts.annotate(
@@ -98,6 +105,15 @@ def post_list(request):
         {'id': 'false', 'name': 'Unmarked', 'count': len(filtered_posts.exclude(read_posts=user))}
     ]
 
+    last_day = int((timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=1)).timestamp()*1000)
+    last_7_days = int((timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=7)).timestamp()*1000)
+    last_30_days = int((timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=30)).timestamp()*1000)
+    time_from_counts = [
+        {'id': last_day, 'name': 'Last Day', 'count': len(filtered_posts.filter(published__gt=datetime.fromtimestamp(last_day/1000)))},
+        {'id': last_7_days, 'name': 'Last 7 Days', 'count': len(filtered_posts.filter(published__gt=datetime.fromtimestamp(last_7_days/1000)))},
+        {'id': last_30_days, 'name': 'Last 30 Days', 'count': len(filtered_posts.filter(published__gt=datetime.fromtimestamp(last_30_days/1000)))}
+    ]
+
     ### paginate
     paginator = Paginator(filtered_posts, 30)
     
@@ -125,6 +141,7 @@ def post_list(request):
                 {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_tracker},
                 {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
                 {'type': 'read_status', 'counts': read_status_counts, 'selected': selected_read_status},
+                {'type': 'time_from', 'counts': time_from_counts, 'selected': selected_time_from},
             ],
             'page': paginator.page,
         }
