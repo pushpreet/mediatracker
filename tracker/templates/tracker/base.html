@@ -10,8 +10,8 @@
     </head>
     <body>
         <header>
-            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-                <div class="container">
+            <nav class="navbar navbar-expand navbar-dark fixed-top bg-dark">
+                <div class="container navbar-container">
                     <a class="navbar-brand" href="{% url 'tracker:post_list' %}">Media Tracker</a>
                     <div class="collapse navbar-collapse" id="navbarsExample07">
                         <ul class="navbar-nav mr-auto">
@@ -30,7 +30,7 @@
         <main>
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-12">
                     {% block content %}
                     {% endblock %}
                     </div>

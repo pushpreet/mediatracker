@@ -42,3 +42,8 @@ body {
 .alignright {
 	float: right;
 }
+
+.navbar-container {
+  max-width: 940px; 
+  padding:0; 
+}
