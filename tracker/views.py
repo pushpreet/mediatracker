@@ -105,9 +105,9 @@ def post_list(request):
         {'id': 'false', 'name': 'Unmarked', 'count': len(filtered_posts.exclude(read_posts=user))}
     ]
 
-    last_day = int((timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=1)).timestamp()*1000)
-    last_7_days = int((timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=7)).timestamp()*1000)
-    last_30_days = int((timezone.now().replace(minute=0, second=0, microsecond=0) - timedelta(days=30)).timestamp()*1000)
+    last_day = int((timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)).timestamp()*1000)
+    last_7_days = int((timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=7)).timestamp()*1000)
+    last_30_days = int((timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=30)).timestamp()*1000)
     time_from_counts = [
         {'id': last_day, 'name': 'Last Day', 'count': len(filtered_posts.filter(published__gt=datetime.fromtimestamp(last_day/1000)))},
         {'id': last_7_days, 'name': 'Last 7 Days', 'count': len(filtered_posts.filter(published__gt=datetime.fromtimestamp(last_7_days/1000)))},
