@@ -149,6 +149,14 @@ def add_tracker_category(request):
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
 
+def delete_tracker_category(request):
+    tracker_category_id = int(request.POST.get('tracker-category-id', False))
+    tracker_category = get_object_or_404(TrackerCategory, pk=tracker_category_id)
+
+    tracker_category.delete()
+
+    return HttpResponseRedirect(reverse('tracker:tracker_list'))
+
 def add_tracker(request):
     tracker_name = request.POST.get('tracker-name', False)
     tracker_query = request.POST.get('query', False)
