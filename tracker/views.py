@@ -18,9 +18,10 @@ def post_list(request):
     
     ### get all form paramters
     q = request.GET.get('q')
-    selected_trackers = request.GET.get('tracker')
-    selected_tracker_categories = request.GET.get('tracker_category')
+    selected_tracker = request.GET.get('tracker', None)
+    selected_tracker_category = request.GET.get('tracker_category', None)
     selected_relevancy = request.GET.get('relevancy', None)
+    selected_read_status = request.GET.get('read_status', None)
     
     query = None
     rank_annotation = None
@@ -36,19 +37,25 @@ def post_list(request):
         filtered_posts = user_posts.order_by('-published')
     
     ### filter posts by form selection
-    if selected_tracker_categories:
-        selected_tracker_categories = int(selected_tracker_categories)
-        filtered_posts = filtered_posts.filter(trackers__category__id=selected_tracker_categories)
+    if selected_tracker_category:
+        selected_tracker_category = int(selected_tracker_category)
+        filtered_posts = filtered_posts.filter(trackers__category__id=selected_tracker_category)
 
-    if selected_trackers:
-        selected_trackers = int(selected_trackers)
-        filtered_posts = filtered_posts.filter(trackers__id=selected_trackers)
+    if selected_tracker:
+        selected_tracker = int(selected_tracker)
+        filtered_posts = filtered_posts.filter(trackers__id=selected_tracker)
     
     if selected_relevancy:
         selected_relevancy = int(selected_relevancy)
         filtered_posts = filtered_posts.filter(userpostrelevant__relevancy=selected_relevancy)
     else:
         filtered_posts = filtered_posts.exclude(userpostrelevant__relevancy=UserPostRelevant.REMOVED)
+    
+    if selected_read_status:
+        if selected_read_status == 'true':
+            filtered_posts = filtered_posts.filter(read_posts=user)
+        if selected_read_status == 'false':
+            filtered_posts = filtered_posts.exclude(read_posts=user)
     
     ### add starred, removed and read flags
     filtered_posts = filtered_posts.annotate(
@@ -86,6 +93,11 @@ def post_list(request):
         {'id': 2, 'name': 'Removed', 'count': len(filtered_posts.filter(removed='true'))}
     ]
 
+    read_status_counts = [
+        {'id': 'true', 'name': 'Marked Read', 'count': len(filtered_posts.filter(read_posts=user))},
+        {'id': 'false', 'name': 'Unmarked', 'count': len(filtered_posts.exclude(read_posts=user))}
+    ]
+
     ### paginate
     paginator = Paginator(filtered_posts, 30)
     
@@ -109,9 +121,10 @@ def post_list(request):
             'q': q,
             'total': paginator.count,
             'filters': [
-                {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_categories},
-                {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_trackers},
+                {'type': 'tracker_category', 'counts': tracker_category_counts, 'selected': selected_tracker_category},
+                {'type': 'tracker', 'counts': tracker_counts, 'selected': selected_tracker},
                 {'type': 'relevancy', 'counts': relevancy_counts, 'selected': selected_relevancy},
+                {'type': 'read_status', 'counts': read_status_counts, 'selected': selected_read_status},
             ],
             'page': paginator.page,
         }
