@@ -45,7 +45,7 @@
                                         <button class="btn btn-sm btn-outline-danger" type="button" data-toggle="modal" data-target="#deleteTrackerModal" data-id="{{ tracker.id }}">Delete</button>
                                     </div>
                                     <div class="flex-item">
-                                        <button class="btn btn-sm btn-outline-primary" type="button" data-toggle="modal" data-target="#editTrackerModal" data-id="{{ tracker.id }}" data-name="{{ tracker.name }}" data-query="{{ tracker.query }}">Edit</button>
+                                        <button class="btn btn-sm btn-outline-primary" type="button" data-toggle="modal" data-target="#editTrackerModal" data-id="{{ tracker.id }}" data-name="{{ tracker.name }}" data-query="{{ tracker.query }}" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">Edit</button>
                                     </div>
                                     <div class="flex-item">
                                         <form style="margin-bottom: 0px;" action="{% url 'tracker:refresh' tracker.id %}" method="post">
@@ -145,6 +145,7 @@
                     {% csrf_token %}
                     <div class="modal-body">
                         <input type="hidden" class="form-control" id="tracker-id" name="tracker-id">
+                        <input type="text" class="form-control" id="tracker-category-id" name="tracker-category-id" hidden>
                         <div class="form-group">
                             <label for="tracker-name" class="col-form-label">Tracker Name:</label>
                             <input type="text" class="form-control" id="tracker-name" name="tracker-name">
@@ -152,6 +153,19 @@
                         <div class="form-group">
                             <label for="query" class="col-form-label">Query:</label>
                             <textarea class="form-control" id="query" name="query"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="query" class="col-form-label">Category:</label>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownCategory" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Dropdown button
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownCategory">
+                                    {% for category in tracker_category_list %}
+                                        <a class="dropdown-item" data-category-id="{{ category.id }}">{{ category.name }}</a>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -185,31 +199,44 @@
 {% block javascript %}
     <script>
         $('#editTrackerModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var id = button.data('id') // Extract info from data-* attributes
-            var name = button.data('name') // Extract info from data-* attributes
-            var query = button.data('query') // Extract info from data-* attributes
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var id = button.data('id'); // Extract info from data-* attributes
+            var name = button.data('name'); // Extract info from data-* attributes
+            var query = button.data('query'); // Extract info from data-* attributes
+            var category_id = button.data('category-id'); // Extract info from data-* attributes
+            var category_name = button.data('category-name'); // Extract info from data-* attributes
             
-            var modal = $(this)
-            modal.find('#tracker-id').val(id)
-            modal.find('#tracker-name').val(name)
-            modal.find('#query').val(query)
+            var modal = $(this);
+            modal.find('#tracker-id').val(id);
+            modal.find('#tracker-name').val(name);
+            modal.find('#query').val(query);
+            modal.find('#tracker-category-id').val(category_id);
+            modal.find('#dropdownCategory').text(category_name);
         });
 
         $('#deleteTrackerModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var id = button.data('id') // Extract info from data-* attributes
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var id = button.data('id'); // Extract info from data-* attributes
             
-            var modal = $(this)
-            modal.find('#tracker-id').val(id)
+            var modal = $(this);
+            modal.find('#tracker-id').val(id);
         });
 
         $('#addTrackerModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var id = button.data('category-id') // Extract info from data-* attributes
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var id = button.data('category-id'); // Extract info from data-* attributes
             
-            var modal = $(this)
-            modal.find('#tracker-category-id').val(id)
+            var modal = $(this);
+            modal.find('#tracker-category-id').val(id);
+        });
+
+        $('.dropdown-item').click( function (event) {
+            var category_id = $(event.target).data('category-id');
+            var category_name = $(event.target).text();
+            
+            var modal = $(this).closest('div[class^="modal"]');
+            modal.find('#tracker-category-id').val(category_id);
+            modal.find('#dropdownCategory').text(category_name);
         });
     </script>
 {% endblock %}

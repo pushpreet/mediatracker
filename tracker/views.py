@@ -176,6 +176,7 @@ def edit_tracker(request):
     tracker_id = request.POST.get('tracker-id', False)
     tracker_name = request.POST.get('tracker-name', False)
     tracker_query = request.POST.get('query', False)
+    tracker_category_id = request.POST.get('tracker-category-id', False)
 
     if tracker_id:
         tracker = Tracker.objects.get(id=tracker_id)
@@ -183,6 +184,7 @@ def edit_tracker(request):
         tracker.name = tracker_name
         tracker.query = tracker_query
         tracker.last_modified = timezone.now()
+        tracker.category = TrackerCategory.objects.get(id = int(tracker_category_id))
         tracker.save()
 
     return HttpResponseRedirect(reverse('tracker:tracker_list'))
