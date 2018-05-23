@@ -8,7 +8,7 @@ app_name = 'tracker'
 urlpatterns = [
     path('', lambda r: HttpResponseRedirect(reverse('tracker:post_list'))),
     path('posts/', views.post_list, name='post_list'),
-    path('posts/<str:pk>/', views.PostDetailView.as_view(), name='post_detail'),
+    path('posts/<str:post_uuid>/', views.post_detail, name='post_detail'),
     path('tracker/', views.TrackerListView.as_view(), name='tracker_list'),
     path('tracker/add-category/', views.add_tracker_category, name='add_category'),
     path('tracker/delete-category/', views.delete_tracker_category, name='delete_category'),

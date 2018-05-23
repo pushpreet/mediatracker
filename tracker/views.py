@@ -131,9 +131,13 @@ def post_list(request):
 
         return render(request, 'tracker/post_list.html', context)
 
-class PostDetailView(generic.DetailView):
-    model = Post
-    template_name = 'tracker/post_detail.html'
+def post_detail(request, post_uuid):
+    post = Post.objects.get(uuid=post_uuid)
+    user = User.objects.get(id=1)
+
+    user.read_posts.add(post)
+
+    return render(request, 'tracker/post_detail.html', {'post': post})
 
 class TrackerListView(generic.ListView):
     template_name = 'tracker/tracker_list.html'
@@ -231,6 +235,8 @@ def set_user_attr(request):
         user = User.objects.get(id=user_id)
         post = Post.objects.get(uuid=post_id)
 
+        
+
         if action == 'toggle_star':
             post_relevancy = UserPostRelevant.objects.filter(user=user, post=post)
             
@@ -275,5 +281,8 @@ def set_user_attr(request):
             else: # read
                 user.read_posts.remove(post_read[0])
                 data['read'] = 'false'
+        
+        elif action == 'set_read':
+            user.read_posts.add(post)
 
         return HttpResponse(JsonResponse(data), content_type="application/json")

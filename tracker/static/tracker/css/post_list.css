@@ -83,4 +83,8 @@ img {
     width: 1px;
     margin: 0.5rem;
     height: 4rem;
-  }
+}
+
+.post-read {
+    color: gray;
+}
