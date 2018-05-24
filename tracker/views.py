@@ -225,10 +225,12 @@ def edit_tracker(request):
     if tracker_id:
         tracker = Tracker.objects.get(id=tracker_id)
 
+        if tracker_query != tracker.query:
+            tracker.last_modified = timezone.now()
+
         tracker.name = tracker_name
         tracker.query = tracker_query
         tracker.color = tracker_color
-        tracker.last_modified = timezone.now()
         tracker.category = TrackerCategory.objects.get(id = int(tracker_category_id))
         tracker.save()
 

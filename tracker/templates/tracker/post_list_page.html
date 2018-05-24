@@ -1,14 +1,16 @@
 {% load humanize %}
 
 {% for post in filtered_posts %}
-    <div class="d-flex flex-row post-card">
+    <div class="d-flex flex-row post-card" style="margin-left: 0px; margin-right: 0px;">
         <div class="card flex-item">
-            <div class="card-body">
-                <div class="d-flex flex-row justify-content-between align-items-start">
+            <div class="card-body {% if post.read == 'true' %} post-read {% endif %}">
+                <div class="d-flex flex-row justify-content-end align-items-center">
+                    <div class="flex-item mr-auto">
+                        <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a>
+                    </div>
                     <div class="flex-item">
-                        <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a><br>
                         {% for tracker in post.trackers.all %}
-                            <a class="badge badge-info" style="font-size: 0.6rem; margin-top:5px; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
+                            <a class="badge badge-info" style="font-size: 0.6rem; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -33,7 +35,7 @@
                         <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
                             <span style="font-size: 0.75rem;">
                                 {{ post.author|title }} | 
-                                <a href="http://{{ post.site_full }} target="_blank"></a>">{{ post.site_full|slice:"4:" }}</a> | 
+                                <a href="http://{{ post.site_full }}">{{ post.site_full|slice:"4:" }}</a> | 
                                 {{ post.published|naturaltime }}
                             </span>
                         </div>
