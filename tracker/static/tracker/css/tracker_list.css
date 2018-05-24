@@ -19,3 +19,22 @@
 .category-header {
     margin-top: 1.5rem;
 }
+
+.btn {
+    padding: 2px 6px;
+}
+
+.swatch {
+    width: 4.5rem;
+    height: 1.5rem;
+    border: 1px solid #bdc3c7;
+}
+
+.swatch-clickable:hover {
+    border: 1px solid #7f8c8d;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    padding:10px;
+}

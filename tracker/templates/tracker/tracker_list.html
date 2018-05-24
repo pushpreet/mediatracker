@@ -48,7 +48,7 @@
                                         <button class="btn btn-sm btn-outline-danger" type="button" data-toggle="modal" data-target="#deleteTrackerModal" data-id="{{ tracker.id }}">Delete</button>
                                     </div>
                                     <div class="flex-item">
-                                        <button class="btn btn-sm btn-outline-primary" type="button" data-toggle="modal" data-target="#editTrackerModal" data-id="{{ tracker.id }}" data-name="{{ tracker.name }}" data-query="{{ tracker.query }}" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">Edit</button>
+                                        <button class="btn btn-sm btn-outline-primary" type="button" data-toggle="modal" data-target="#editTrackerModal" data-id="{{ tracker.id }}" data-name="{{ tracker.name }}" data-query="{{ tracker.query }}" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}" data-color="{{ tracker.color }}">Edit</button>
                                     </div>
                                     <div class="flex-item">
                                         <form style="margin-bottom: 0px;" action="{% url 'tracker:refresh' tracker.id %}" method="post">
@@ -92,7 +92,7 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="tracker-category-name" class="col-form-label">Category Name:</label>
-                            <input type="text" class="form-control" id="tracker-category-name" name="tracker-category-name">
+                            <input type="text" class="form-control" id="tracker-category-name" name="tracker-category-name" autofocus>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -111,7 +111,7 @@
                     {% csrf_token %}
                     <div class="modal-body">
                         <input type="text" class="form-control" id="tracker-category-id" name="tracker-category-id" hidden>
-                        <label for="query" class="col-form-label">Are you sure?</label>
+                        <label for="tracker-category-id" class="col-form-label">Are you sure?</label>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
@@ -137,11 +137,36 @@
                         <input type="text" class="form-control" id="tracker-category-id" name="tracker-category-id" hidden>
                         <div class="form-group">
                             <label for="tracker-name" class="col-form-label">Tracker Name:</label>
-                            <input type="text" class="form-control" id="tracker-name" name="tracker-name">
+                            <input type="text" class="form-control" id="tracker-name" name="tracker-name" autofocus>
                         </div>
                         <div class="form-group">
-                            <label for="query" class="col-form-label">Query:</label>
-                            <textarea class="form-control" id="query" name="query"></textarea>
+                            <label for="tracker-query" class="col-form-label">Query:</label>
+                            <textarea class="form-control" id="tracker-query" name="tracker-query"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="tracker-color" class="col-form-label">Color:</label>
+                            <input class="color-field" id="tracker-color" name="tracker-color" value="#e67e22" hidden>
+                            <div class="dropdown">
+                                <button class="swatch btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                    <table>
+                                        <tr>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#f1c40f"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#e74c3c"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#27ae60"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#2980b9"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#8e44ad"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#f39c12"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#c0392b"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#16a085"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#e67e22"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#2c3e50"></div></td>
+                                        </tr>
+                                    </table>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -172,16 +197,41 @@
                             <input type="text" class="form-control" id="tracker-name" name="tracker-name">
                         </div>
                         <div class="form-group">
-                            <label for="query" class="col-form-label">Query:</label>
-                            <textarea class="form-control" id="query" name="query"></textarea>
+                            <label for="tracker-query" class="col-form-label">Query:</label>
+                            <textarea class="form-control" id="tracker-query" name="tracker-query" autofocus></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="query" class="col-form-label">Category:</label>
+                            <label for="tracker-color" class="col-form-label">Color:</label>
+                            <input class="color-field" id="tracker-color" name="tracker-color" value="#e67e22" hidden>
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownCategory" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <button class="swatch btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                    <table>
+                                        <tr>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#f1c40f"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#e74c3c"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#27ae60"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#2980b9"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#8e44ad"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#f39c12"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#c0392b"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#16a085"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#e67e22"></div></td>
+                                            <td><div class="swatch swatch-clickable" style="background-color:#2c3e50"></div></td>
+                                        </tr>
+                                    </table>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="dropdown-category" class="col-form-label">Category:</label>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdown-category" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Dropdown button
                                 </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownCategory">
+                                <div class="dropdown-menu" aria-labelledby="dropdown-category">
                                     {% for category in tracker_category_list %}
                                         <a class="dropdown-item" data-category-id="{{ category.id }}">{{ category.name }}</a>
                                     {% endfor %}
@@ -205,7 +255,7 @@
                     {% csrf_token %}
                     <div class="modal-body">
                         <input type="text" class="form-control" id="tracker-id" name="tracker-id" hidden>
-                        <label for="query" class="col-form-label">Are you sure?</label>
+                        <label for="tracker-id" class="col-form-label">Are you sure?</label>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
@@ -219,20 +269,27 @@
 
 {% block javascript %}
     <script>
+        $('.modal').on('shown.bs.modal', function() {
+            $(this).find('[autofocus]').focus();
+        });
+
         $('#editTrackerModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget); // Button that triggered the modal
             var id = button.data('id'); // Extract info from data-* attributes
             var name = button.data('name'); // Extract info from data-* attributes
             var query = button.data('query'); // Extract info from data-* attributes
+            var color = button.data('color'); // Extract info from data-* attributes
             var category_id = button.data('category-id'); // Extract info from data-* attributes
             var category_name = button.data('category-name'); // Extract info from data-* attributes
             
             var modal = $(this);
             modal.find('#tracker-id').val(id);
             modal.find('#tracker-name').val(name);
-            modal.find('#query').val(query);
+            modal.find('#tracker-query').val(query);
+            modal.find('#tracker-color').val(color);
+            modal.find('button[class^="swatch"]').css('background-color', color);
             modal.find('#tracker-category-id').val(category_id);
-            modal.find('#dropdownCategory').text(category_name);
+            modal.find('#dropdown-category').text(category_name);
         });
 
         $('#deleteTrackerModal').on('show.bs.modal', function (event) {
@@ -265,7 +322,24 @@
             
             var modal = $(this).closest('div[class^="modal"]');
             modal.find('#tracker-category-id').val(category_id);
-            modal.find('#dropdownCategory').text(category_name);
+            modal.find('#dropdown-category').text(category_name);
         });
+
+        $(".swatch-clickable").click( function(event) {
+            var color_hex  = rgb2hex($(this).css('background-color'));
+            
+            $(this).closest('ul[class^="dropdown-menu"]').siblings().css('background-color', color_hex);
+            $(this).closest('div[class^="form-group"]').find('#tracker-color').val(color_hex);
+        });
+
+        function rgb2hex(rgb) {
+            if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
+        
+            rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            function hex(x) {
+                return ("0" + parseInt(x).toString(16)).slice(-2);
+            }
+            return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+        }
     </script>
 {% endblock %}

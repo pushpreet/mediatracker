@@ -193,13 +193,14 @@ def delete_tracker_category(request):
 
 def add_tracker(request):
     tracker_name = request.POST.get('tracker-name', False)
-    tracker_query = request.POST.get('query', False)
+    tracker_query = request.POST.get('tracker-query', False)
+    tracker_color = request.POST.get('tracker-color', False)
     tracker_category_id = request.POST.get('tracker-category-id', False)
     
     Tracker.objects.create(
         name = tracker_name,
         query = tracker_query,
-        color = '#e67e22',
+        color = tracker_color,
         last_modified = timezone.now(),
         last_updated = timezone.now(),
         created_by = User.objects.get(name = 'Pushpreet'),
@@ -217,7 +218,8 @@ def refresh_tracker(request, tracker_id):
 def edit_tracker(request):
     tracker_id = request.POST.get('tracker-id', False)
     tracker_name = request.POST.get('tracker-name', False)
-    tracker_query = request.POST.get('query', False)
+    tracker_query = request.POST.get('tracker-query', False)
+    tracker_color = request.POST.get('tracker-color', False)
     tracker_category_id = request.POST.get('tracker-category-id', False)
 
     if tracker_id:
@@ -225,6 +227,7 @@ def edit_tracker(request):
 
         tracker.name = tracker_name
         tracker.query = tracker_query
+        tracker.color = tracker_color
         tracker.last_modified = timezone.now()
         tracker.category = TrackerCategory.objects.get(id = int(tracker_category_id))
         tracker.save()
