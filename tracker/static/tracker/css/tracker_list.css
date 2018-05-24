@@ -24,13 +24,31 @@
     padding: 2px 6px;
 }
 
-.swatch {
-    width: 4.5rem;
-    height: 1.5rem;
-    border: 1px solid #bdc3c7;
+.color-dot {
+    height: 2rem;
+    width: 2rem;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
 }
 
-.swatch-clickable:hover {
+.color-dot-sm {
+    height: 1rem;
+    width: 1rem;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.color-swatch {
+    height: 1rem;
+    width: 3rem;
+    background-color: #bbb;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.color-dot-clickable:hover {
     border: 1px solid #7f8c8d;
     cursor: pointer;
 }

@@ -42,7 +42,7 @@
                             <div class="card-body">
                                 <div class="d-flex flex-row justify-content-between">
                                     <div class="flex-item mr-auto">
-                                        <a class="custom-header">{{ tracker.name }}</a>
+                                        <span><a class="custom-header">{{ tracker.name }}</a><div class="color-swatch" style="background-color: {{ tracker.color }}; margin-left: 0.5rem;"></div></span>
                                     </div>
                                     <div class="flex-item">
                                         <button class="btn btn-sm btn-outline-danger" type="button" data-toggle="modal" data-target="#deleteTrackerModal" data-id="{{ tracker.id }}">Delete</button>
@@ -61,7 +61,7 @@
                                 <span class="card-text">
                                     {{ tracker.query }}
                                 </span>
-                                <p class="text-right" style="font-size: 12px; margin-bottom: 0px;">modified {{ tracker.last_modified|naturaltime }} | updated {{ tracker.last_updated|naturaltime }}</p>
+                                <p class="text-right" style="font-size: 12px; margin-bottom: 0px; margin-top: 1rem;">modified {{ tracker.last_modified|naturaltime }} | updated {{ tracker.last_updated|naturaltime }}</p>
                             </div>
                         </div>
                     </div>
@@ -146,23 +146,23 @@
                         <div class="form-group">
                             <label for="tracker-color" class="col-form-label">Color:</label>
                             <input class="color-field" id="tracker-color" name="tracker-color" value="#e67e22" hidden>
-                            <div class="dropdown">
-                                <button class="swatch btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
+                            <div class="dropright">
+                                <button class="color-dot btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
                                 <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
                                     <table>
                                         <tr>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#f1c40f"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#e74c3c"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#27ae60"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#2980b9"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#8e44ad"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#00b894"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#d63031"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#0984e3"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#6c5ce7"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#e17055"></div></td>
                                         </tr>
                                         <tr>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#f39c12"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#c0392b"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#16a085"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#e67e22"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#2c3e50"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#ff7675"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#e84393"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#636e72"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#e67e22"></div></td>
+                                            <td><div class="color-dot color-dot-clickable" style="background-color:#2c3e50"></div></td>
                                         </tr>
                                     </table>
                                 </ul>
@@ -203,24 +203,24 @@
                         <div class="form-group">
                             <label for="tracker-color" class="col-form-label">Color:</label>
                             <input class="color-field" id="tracker-color" name="tracker-color" value="#e67e22" hidden>
-                            <div class="dropdown">
-                                <button class="swatch btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
+                            <div class="dropright">
+                                <button class="color-dot btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
                                 <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
                                     <table>
-                                        <tr>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#f1c40f"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#e74c3c"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#27ae60"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#2980b9"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#8e44ad"></div></td>
-                                        </tr>
-                                        <tr>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#f39c12"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#c0392b"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#16a085"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#e67e22"></div></td>
-                                            <td><div class="swatch swatch-clickable" style="background-color:#2c3e50"></div></td>
-                                        </tr>
+                                            <tr>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#00b894"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#d63031"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#0984e3"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#6c5ce7"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#e17055"></div></td>
+                                            </tr>
+                                            <tr>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#ff7675"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#e84393"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#636e72"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#e67e22"></div></td>
+                                                <td><div class="color-dot color-dot-clickable" style="background-color:#2c3e50"></div></td>
+                                            </tr>
                                     </table>
                                 </ul>
                             </div>
@@ -287,7 +287,7 @@
             modal.find('#tracker-name').val(name);
             modal.find('#tracker-query').val(query);
             modal.find('#tracker-color').val(color);
-            modal.find('button[class^="swatch"]').css('background-color', color);
+            modal.find('button[class^="color-dot"]').css('background-color', color);
             modal.find('#tracker-category-id').val(category_id);
             modal.find('#dropdown-category').text(category_name);
         });
@@ -325,7 +325,7 @@
             modal.find('#dropdown-category').text(category_name);
         });
 
-        $(".swatch-clickable").click( function(event) {
+        $(".color-dot-clickable").click( function(event) {
             var color_hex  = rgb2hex($(this).css('background-color'));
             
             $(this).closest('ul[class^="dropdown-menu"]').siblings().css('background-color', color_hex);
