@@ -4,6 +4,7 @@
 
 {% block stylesheet %}
     <link rel="stylesheet" type="text/css" href="{% static 'tracker/css/post_list.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'tracker/css/animate.min.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -152,13 +153,20 @@
                 check_el = $(e.target).parent().parent().find(".fa-check");
                 times_el = $(e.target).parent().parent().find(".fa-times");
 
+                post_el = $(e.target).parent().parent().parent();
+
                 if (data.starred === 'true') star_el.addClass('starred');
                 else if (data.starred === 'false') star_el.removeClass('starred');
                 
                 if (data.read === 'true') check_el.addClass('read');
                 else if (data.read === 'false') check_el.removeClass('read');
 
-                if (data.removed === 'true') times_el.addClass('removed');
+                if (data.removed === 'true') {
+                    times_el.addClass('removed');
+                    post_el.animateCss('fadeOutRight', function () {
+                        post_el.remove();
+                    });
+                }
                 else if (data.removed === 'false') times_el.removeClass('removed');
             },
             error: function (data) {
