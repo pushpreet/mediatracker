@@ -1,7 +1,7 @@
 {% load humanize %}
 
 {% for post in filtered_posts %}
-    <div class="d-flex flex-row post-card" style="margin-left: 0px; margin-right: 0px;">
+    <div class="d-flex flex-row post-card">
         <div class="card flex-item">
             <div class="card-body {% if post.read == 'true' %} post-read {% endif %}">
                 <div class="d-flex flex-row justify-content-end align-items-center">

@@ -34,10 +34,7 @@
             
             {% if category.trackers %}
                 {% for tracker in category.trackers %}
-                    <div class="d-flex flex-row post-card">
-                        <div class="flex-item">
-                            <div class="section-line"></div>
-                        </div>
+                    <div class="post-card">
                         <div class="card flex-item">
                             <div class="card-body">
                                 <div class="d-flex flex-row justify-content-between">
@@ -145,7 +142,7 @@
                         </div>
                         <div class="form-group">
                             <label for="tracker-color" class="col-form-label">Color:</label>
-                            <input class="color-field" id="tracker-color" name="tracker-color" value="#e67e22" hidden>
+                            <input class="color-field" id="tracker-color" name="tracker-color" value="#16a085" hidden>
                             <div class="dropright">
                                 <button class="color-dot btn btn-default btn-color" data-toggle="dropdown" href="#" style="background-color:#16a085"></button>
                                 <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">

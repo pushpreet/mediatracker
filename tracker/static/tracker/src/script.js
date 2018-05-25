@@ -29,3 +29,5 @@ $.fn.extend({
     return this;
   },
 });
+
+$('.btn').mouseup(function() { this.blur() })
