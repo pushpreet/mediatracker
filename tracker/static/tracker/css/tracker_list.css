@@ -56,3 +56,8 @@
 .dropdown-menu {
     padding:10px;
 }
+
+.no-border {
+    border: 0;
+    padding: 2px 3px;
+}
