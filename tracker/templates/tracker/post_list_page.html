@@ -4,11 +4,11 @@
     <div class="d-flex flex-row post-card">
         <div class="card flex-item">
             <div class="card-body {% if post.read == 'true' %} post-read {% endif %}">
-                <div class="d-flex flex-row justify-content-end align-items-center">
+                <div class="d-flex flex-row justify-content-end align-items-top">
                     <div class="flex-item mr-auto">
-                        <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}">{{ post.title }}</a>
+                        <a class="custom-header" style="font-size: 1.1rem;" href="{{ post.url }}" target="_blank">{{ post.title }}</a>
                     </div>
-                    <div class="flex-item">
+                    <div class="flex-item" style="padding-top: 7px;">
                         {% for tracker in post.trackers.all %}
                             <a class="badge badge-info" style="font-size: 0.6rem; background-color:{{ tracker.color }};" href="{% url 'tracker:tracker_list' %}">{{ tracker.name }}</a>
                         {% endfor %}
@@ -18,7 +18,7 @@
                 <div class="row">
                     {% if post.main_image|length > 0 %}
                     <div class="col-lg-3 col-md-3 d-none d-md-block">
-                        <a href="{{ post.url }}" class="custom-card">
+                        <a href="{{ post.url }}" class="custom-card" target="_blank">
                             <img src="{{ post.main_image }}">
                         </a>
                     </div>
@@ -35,7 +35,7 @@
                         <div class="justify-content-end" style="margin-top: auto; margin-left:auto;">
                             <span style="font-size: 0.75rem;">
                                 {{ post.author|title }} | 
-                                <a href="http://{{ post.site_full }}">{{ post.site_full|slice:"4:" }}</a> | 
+                                <a href="http://{{ post.site_full }}" target="_blank">{{ post.site_full|slice:"4:" }}</a> | 
                                 {{ post.published|naturaltime }}
                             </span>
                         </div>
